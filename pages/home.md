@@ -1,6 +1,6 @@
 ---
-title: The title
-lead: Taxa from your imagination to the web
+title: Ammonoidea
+lead: A project to document the diversity of the Ammonites
 project: Your project
 ---
    
