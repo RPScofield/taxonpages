@@ -17,7 +17,7 @@ If you have a question, want to report new data relevant to the project, or have
  _Please contact us if you would like to join this effort._
 
 Made possible by the wonderful:
-* Paul Scofield - CUrator
+* Paul Scofield - Curator
 
 ## Citing
 * This website - {{frontmatter.citation}}
