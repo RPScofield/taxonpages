@@ -1,8 +1,8 @@
 ---
-title: About
-contact_email: user@example.com
+title: Ammonoidea
+contact_email: pscofield@canterburymuseum.com
 copyright: All content is CC 0 so that it maybe be shared throughout the world in places like Wikipedia.
-citation: Project collaborative. 2022. Website title. Available at https://example.com. 
+citation: Ammonoidea. 2023. Ammonites of the World. Available at https://example.com. 
 ---
 
 # {{frontmatter.title}}
@@ -17,10 +17,7 @@ If you have a question, want to report new data relevant to the project, or have
  _Please contact us if you would like to join this effort._
 
 Made possible by the wonderful:
-* Gandalf - Technical lead
-* Aragorn - Outside advisor 
-* Frodo - Lead curator
-* Samwise - Emotional support
+* Paul Scofield - CUrator
 
 ## Citing
 * This website - {{frontmatter.citation}}
