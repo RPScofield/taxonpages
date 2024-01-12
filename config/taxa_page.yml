@@ -2,21 +2,22 @@ taxa_page:
   overview:
     panels:
       - - - panel:gallery
-          - panel:content
           - panel:type
           - panel:type-specimen
+          - panel:content
           - panel:nomenclature
           - panel:nomenclature-references
 
         - - panel:map
           - panel:descendants
+          - panel:scrutiny
           - panel:statistics
-    specimen_records:
-        rank_group: ['SpeciesGroup']
-        panels:
-          - - - panel:specimen-records
-    inaturalist:
-        label: 'iNaturalist'
-        rank_group: ['GenusGroup', 'SpeciesGroup']
-        panels:
-          - - - panel:inaturalist
+  specimen_records:
+    rank_group: ['SpeciesGroup']
+    panels:
+      - - - panel:specimen-records
+  inaturalist:
+    label: 'iNaturalist'
+    rank_group: ['GenusGroup', 'SpeciesGroup']
+    panels:
+      - - - panel:inaturalist
