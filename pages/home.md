@@ -14,7 +14,7 @@ Welcome to *{{ frontmatter.project }}*, a website of taxon pages generated from 
 <autocomplete-otu class="w-80"/>
 
 ## Announcements
-* 17/12/20232 - We've grown!  
+* 17/10/2025 - We've grown!  
 * 14/12/2023 - Our website is live!
 
 ## Find out more
