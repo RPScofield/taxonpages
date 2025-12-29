@@ -75,11 +75,29 @@ jobs:
       - name: Build public view
         run: npm run build
 
+      - name: Debug - List build directory contents
+        run: |
+          echo "Checking for build output directory..."
+          ls -la
+          echo "---"
+          if [ -d "build" ]; then
+            echo "✓ build directory exists"
+            ls -la build
+          else
+            echo "✗ build directory not found"
+          fi
+          if [ -d "dist" ]; then
+            echo "✓ dist directory exists"
+            ls -la dist
+          else
+            echo "✗ dist directory not found"
+          fi
+
       - name: Deploy to GitHub Pages
         uses: crazy-max/ghaction-github-pages@v2
         with:
           target_branch: gh-pages
-          build_dir: dist
+          build_dir: build
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
