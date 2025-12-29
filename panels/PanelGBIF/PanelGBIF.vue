@@ -67,7 +67,6 @@ async function loadUsageKey() {
     })
 
     usageKey.value = data?.usageKey ?? null
-    hasError.value = false
   } catch (err) {
     // ignore aborts; handle other errors
     if (err?.name === 'CanceledError' || err?.message === 'canceled') {
