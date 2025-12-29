@@ -1,9 +1,7 @@
 <template>
   <div v-if="hasData" class="panel-container border-t border-gray-200 py-4">
     <h3 class="text-lg font-medium text-gray-900 mb-2">Etymology & Grammar</h3>
-    <pre class="text-xs text-red-600 bg-red-50 p-2 overflow-auto max-h-40">
-  {{ taxon.taxon_name_classifications }}
-</pre>
+    
     <div class="flex flex-col gap-6">
       
       <div v-if="taxon.etymology" class="w-full">
