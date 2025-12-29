@@ -5,7 +5,7 @@
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
       <div v-if="taxon.etymology">
         <span class="block text-sm font-semibold text-gray-500 uppercase">Etymology</span>
-        <p class="text-sm italic" v-html="taxon.etymology"></p>
+        <p class="text-sm" v-html="taxon.etymology"></p>
       </div>
 
       <div v-if="gender">
@@ -24,7 +24,6 @@
 <script setup>
 import { computed } from 'vue'
 
-// TaxonPages injects the 'taxon' object into every panel
 const props = defineProps({
   taxon: {
     type: Object,
@@ -32,23 +31,24 @@ const props = defineProps({
   }
 })
 
-// Extract Gender from taxon_name_classifications
+// FIX: Updated string matching to be more flexible for "Latinized" types
 const gender = computed(() => {
   const g = props.taxon.taxon_name_classifications?.find(c => 
-    c.type.includes('Latinized::Gender')
+    c.taxon_name_classification_set?.includes('Gender') || 
+    c.type?.includes('Gender')
   )
-  return g ? g.type.split('::').pop() : null
+  return g ? (g.label || g.type.split('::').pop()) : null
 })
 
-// Extract Part of Speech (Form)
 const partOfSpeech = computed(() => {
   const p = props.taxon.taxon_name_classifications?.find(c => 
-    c.type.includes('Latinized::PartOfSpeech')
+    c.taxon_name_classification_set?.includes('PartOfSpeech') || 
+    c.type?.includes('PartOfSpeech')
   )
-  return p ? p.type.split('::').pop() : null
+  return p ? (p.label || p.type.split('::').pop()) : null
 })
 
 const hasData = computed(() => 
-  props.taxon.etymology || gender.value || partOfSpeech.value
+  !!(props.taxon.etymology || gender.value || partOfSpeech.value)
 )
 </script>
