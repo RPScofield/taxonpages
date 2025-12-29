@@ -91,6 +91,7 @@ jobs:
             ls -la dist
           else
             echo "✗ dist directory not found"
+          fi
       - name: Debug build output
         run: |
           echo "Working dir: $(pwd)"
@@ -106,7 +107,7 @@ jobs:
         uses: crazy-max/ghaction-github-pages@v2
         with:
           target_branch: gh-pages
-          build_dir: build
+          build_dir: dist
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
