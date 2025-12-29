@@ -91,6 +91,15 @@ jobs:
             ls -la dist
           else
             echo "✗ dist directory not found"
+      - name: Debug build output
+        run: |
+          echo "Working dir: $(pwd)"
+          ls -la
+          if [ -d dist ]; then
+            echo "=== dist exists ==="
+            ls -la dist
+          else
+            echo "=== dist missing ==="
           fi
 
       - name: Deploy to GitHub Pages
