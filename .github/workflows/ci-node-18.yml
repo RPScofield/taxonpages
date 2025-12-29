@@ -1,0 +1,88 @@
+name: CI Node 18
+
+on:
+  push:
+    branches: [main, setup]
+  pull_request:
+    branches: [main, setup]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js 18
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20.19.0'
+
+      - name: Verify package-lock.json exists
+        run: |
+          if [ ! -f package-lock.json ]; then
+            echo "Error: package-lock.json not found"
+            echo "Current directory: $(pwd)"
+            echo "Files in directory:"
+            ls -la
+            exit 1
+          fi
+          echo "package-lock.json found"
+
+      - name: Display npm and Node.js versions
+        run: |
+          echo "Node version: $(node --version)"
+          echo "npm version: $(npm --version)"
+          echo "package-lock.json integrity:"
+          cat package-lock.json | head -20
+
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        id: npm-cache
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-18-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-18-
+
+      - name: Validate package-lock.json
+        id: validate-lock
+        run: |
+          if [ ! -f package-lock.json ]; then
+            echo "lock_exists=false" >> $GITHUB_OUTPUT
+            echo "⚠️ package-lock.json not found"
+          else
+            echo "lock_exists=true" >> $GITHUB_OUTPUT
+            echo "✓ package-lock.json found"
+          fi
+
+      - name: Generate package-lock.json if missing
+        if: steps.validate-lock.outputs.lock_exists == 'false'
+        run: |
+          echo "📦 Generating package-lock.json..."
+          npm install --package-lock-only
+          echo "✓ package-lock.json generated"
+
+      - name: Commit generated package-lock.json
+        if: steps.validate-lock.outputs.lock_exists == 'false' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/setup')
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add package-lock.json
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "chore: auto-generate package-lock.json for CI consistency"
+            git push || echo "Failed to push changes, but continuing workflow"
+          fi
+
+      - name: Install dependencies
+        run: |
+          echo "Running npm ci..."
+          npm ci --verbose
+          echo "Dependencies installed successfully"
+
+      - name: Build
+        run: npm run build
