@@ -21,6 +21,7 @@
 !postcss.config.cjs
 !.eslintrc.cjs
 !jsconfig.json
+!server.js
 config/**/*.development.yml
 node_modules/
 dist/
