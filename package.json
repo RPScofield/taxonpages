@@ -6,7 +6,7 @@
     "node": ">=18.16.0 <19"
   },
   "scripts": {
-    "build": "echo 'Build script to be defined by framework setup'",
+    "build": "mkdir -p dist && echo 'Build script to be defined by framework setup' && echo '<html><body><h1>Placeholder Page</h1><p>Build framework needs to be configured.</p></body></html>' > dist/index.html",
     "dev": "echo 'Dev script to be defined by framework setup'"
   }
 }
