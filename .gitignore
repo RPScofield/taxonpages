@@ -6,6 +6,7 @@
 !config
 !config/**
 !public
+!public/**
 !README.md
 !.github
 !.github/**
@@ -15,4 +16,12 @@
 !package.json
 !package-lock.json
 !index.html
+!vite.config.js
+!tailwind.config.cjs
+!postcss.config.cjs
+!.eslintrc.cjs
+!jsconfig.json
+!server.js
 config/**/*.development.yml
+node_modules/
+dist/

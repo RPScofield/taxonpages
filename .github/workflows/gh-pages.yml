@@ -16,13 +16,21 @@ jobs:
           fetch-depth: 0
       
       - uses: actions/checkout@v3
+        continue-on-error: true
         with:
           ref: 'setup'
           fetch-depth: 0
           path: _setup
 
       - name: Insert setup branch
-        run: cp -r _setup/* .
+        continue-on-error: true
+        run: |
+          if [ -d "_setup" ]; then
+            cp -r _setup/* .
+            echo "✓ Setup branch files merged"
+          else
+            echo "⚠️  No setup branch found, using main branch files only"
+          fi
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
