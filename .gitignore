@@ -13,4 +13,5 @@
 !src/**
 !.nvmrc
 !package.json
+!package-lock.json
 config/**/*.development.yml
