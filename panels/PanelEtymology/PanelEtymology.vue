@@ -38,21 +38,64 @@ const formatMarkdown = (text) => {
   return text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
 }
 
-// FIX 2: More aggressive search for Gender/Form
+// Helper: safely get a string from multiple possible fields on a classification object
+const getStringFields = (c) => {
+  const candidates = [
+    c?.label,
+    c?.value,            // some backends use 'value'
+    c?.name,             // some use 'name'
+    c?.type,
+    // taxon_name_classification_set may be an object; try its label or name if present
+    (typeof c?.taxon_name_classification_set === 'string') ? c.taxon_name_classification_set : c?.taxon_name_classification_set?.label || c?.taxon_name_classification_set?.name
+  ]
+  return candidates.filter(x => typeof x === 'string' && x.trim().length > 0)
+}
+
+// Safe lowercase check helper
+const includesIgnoreCase = (str, needle) => {
+  if (typeof str !== 'string') return false
+  return str.toLowerCase().includes(needle.toLowerCase())
+}
+
+// Normalize display value: prefer label/value/name; if only type present, return last segment after '::'
+const classificationDisplay = (c) => {
+  if (!c) return null
+  if (typeof c.label === 'string' && c.label.trim()) return c.label.trim()
+  if (typeof c.value === 'string' && c.value.trim()) return c.value.trim()
+  if (typeof c.name === 'string' && c.name.trim()) return c.name.trim()
+  if (typeof c.type === 'string' && c.type.trim()) {
+    const parts = c.type.split('::').map(p => p.trim()).filter(Boolean)
+    return parts.length ? parts[parts.length - 1] : c.type.trim()
+  }
+  // fallback to any string-like field
+  const s = getStringFields(c)[0]
+  return s || null
+}
+
+// FIX 2: More robust search for Gender/Form across many possible fields
 const gender = computed(() => {
-  const g = props.taxon.taxon_name_classifications?.find(c => 
-    c.type?.toLowerCase().includes('gender') || 
-    c.taxon_name_classification_set?.toLowerCase().includes('gender')
-  )
-  return g ? (g.label || g.type.split('::').pop()) : null
+  const list = props.taxon.taxon_name_classifications || []
+  const g = list.find(c => {
+    // check any string field for 'gender'
+    const strings = getStringFields(c)
+    return strings.some(s => includesIgnoreCase(s, 'gender'))
+  })
+  const raw = classificationDisplay(g)
+  return raw ? raw : null
 })
 
 const partOfSpeech = computed(() => {
-  const p = props.taxon.taxon_name_classifications?.find(c => 
-    c.type?.toLowerCase().includes('partofspeech') || 
-    c.type?.toLowerCase().includes('form')
-  )
-  return p ? (p.label || p.type.split('::').pop()) : null
+  const list = props.taxon.taxon_name_classifications || []
+  const p = list.find(c => {
+    const strings = getStringFields(c)
+    // look for "part of speech", "partofspeech", "form", "form of", or "grammatical"
+    return strings.some(s => {
+      const sLower = s.toLowerCase()
+      return sLower.includes('partofspeech') || sLower.includes('part of speech') || sLower.includes('form') || sLower.includes('grammatical') || sLower.includes('speech')
+    })
+  })
+  const raw = classificationDisplay(p)
+  return raw ? raw : null
 })
 
 const hasData = computed(() => !!(props.taxon.etymology || gender.value || partOfSpeech.value))
