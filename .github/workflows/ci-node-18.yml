@@ -15,10 +15,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup Node.js 18
+      - name: Setup Node.js 22
         uses: actions/setup-node@v3
         with:
-          node-version: '18.20.0'
+          node-version: '22.12.0'
 
       - name: Verify package-lock.json exists
         run: |
@@ -43,9 +43,9 @@ jobs:
         id: npm-cache
         with:
           path: ~/.npm
-          key: ${{ runner.os }}-node-18-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ runner.os }}-node-22-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-node-18-
+            ${{ runner.os }}-node-22-
 
       - name: Validate package-lock.json
         id: validate-lock

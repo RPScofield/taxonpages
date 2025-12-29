@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "engines": {
-    "node": ">=18.16.0 <19"
+    "node": ">=22.12.0"
   },
   "scripts": {
     "build": "mkdir -p dist && echo 'Build script to be defined by framework setup' && echo '<html><body><h1>Placeholder Page</h1><p>Build framework needs to be configured.</p></body></html>' > dist/index.html",
