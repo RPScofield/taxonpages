@@ -1,0 +1,12 @@
+{
+  "name": "taxonpages-instance",
+  "version": "1.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=18.16.0 <19"
+  },
+  "scripts": {
+    "build": "echo 'Build script to be defined by framework setup'",
+    "dev": "echo 'Dev script to be defined by framework setup'"
+  }
+}
