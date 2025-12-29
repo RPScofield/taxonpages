@@ -43,9 +43,9 @@ jobs:
         id: npm-cache
         with:
           path: ~/.npm
-          key: ${{ runner.os }}-node-18-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ runner.os }}-node-20-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-node-18-
+            ${{ runner.os }}-node-20-
 
       - name: Validate package-lock.json
         id: validate-lock
