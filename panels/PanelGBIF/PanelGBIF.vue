@@ -1,10 +1,17 @@
 <template>
-  <VCard v-if="url">
+  <VCard v-if="url || isLoading || hasError">
     <VCardHeader><GBIFLogo class="h-6" /></VCardHeader>
     <VCardContent>
+      <VSpinner v-if="isLoading" legend="Loading GBIF data..." />
+      <div v-else-if="hasError" class="text-sm text-red-600 dark:text-red-400">
+        Failed to load GBIF data
+      </div>
       <a
+        v-else-if="url"
         class="text-sm"
         :href="url"
+        target="_blank"
+        rel="noopener noreferrer"
         v-html="taxon.full_name_tag"
       ></a>
     </VCardContent>
@@ -20,16 +27,13 @@ const props = defineProps({
   taxon: {
     type: Object,
     required: true
-  },
-
-  perPage: {
-    type: Number,
-    default: 60
   }
 })
 
 // ensure usageKey exists before using it in computed (avoid TDZ)
 const usageKey = ref(null)
+const isLoading = ref(false)
+const hasError = ref(false)
 
 const url = computed(() => {
   return usageKey.value
@@ -42,8 +46,13 @@ let controller = null
 async function loadUsageKey() {
   if (!props.taxon?.expanded_name) {
     usageKey.value = null
+    isLoading.value = false
+    hasError.value = false
     return
   }
+
+  isLoading.value = true
+  hasError.value = false
 
   try {
     // cancel previous request (if any)
@@ -58,6 +67,7 @@ async function loadUsageKey() {
     })
 
     usageKey.value = data?.usageKey ?? null
+    hasError.value = false
   } catch (err) {
     // ignore aborts; handle other errors
     if (err?.name === 'CanceledError' || err?.message === 'canceled') {
@@ -65,8 +75,10 @@ async function loadUsageKey() {
     } else {
       console.error('Failed to load GBIF usageKey:', err)
       usageKey.value = null
+      hasError.value = true
     }
   } finally {
+    isLoading.value = false
     controller = null
   }
 }
