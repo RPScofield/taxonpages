@@ -1,28 +1,5 @@
-<template>
-  <div v-if="hasData" class="panel-container border-t border-gray-200 py-4">
-    <h3 class="text-lg font-medium text-gray-900 mb-2">Etymology & Grammar</h3>
-    
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <div v-if="taxon.etymology">
-        <span class="block text-sm font-semibold text-gray-500 uppercase">Etymology</span>
-        <p class="text-sm" v-html="taxon.etymology"></p>
-      </div>
-
-      <div v-if="gender">
-        <span class="block text-sm font-semibold text-gray-500 uppercase">Gender</span>
-        <p class="text-sm capitalize">{{ gender }}</p>
-      </div>
-
-      <div v-if="partOfSpeech">
-        <span class="block text-sm font-semibold text-gray-500 uppercase">Grammatical Form</span>
-        <p class="text-sm capitalize">{{ partOfSpeech }}</p>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 
 const props = defineProps({
   taxon: {
@@ -31,19 +8,27 @@ const props = defineProps({
   }
 })
 
-// FIX: Updated string matching to be more flexible for "Latinized" types
+// This will help us debug. Open your browser console (F12) to see the data.
+onMounted(() => {
+  console.log('Taxon Classifications:', props.taxon.taxon_name_classifications)
+})
+
 const gender = computed(() => {
+  // Broad search for any classification containing 'Gender'
   const g = props.taxon.taxon_name_classifications?.find(c => 
-    c.taxon_name_classification_set?.includes('Gender') || 
-    c.type?.includes('Gender')
+    c.type?.toLowerCase().includes('gender') || 
+    c.taxon_name_classification_set?.toLowerCase().includes('gender')
   )
+  // Try to return a label first, then the end of the type string
   return g ? (g.label || g.type.split('::').pop()) : null
 })
 
 const partOfSpeech = computed(() => {
+  // Broad search for 'PartOfSpeech' or 'Form'
   const p = props.taxon.taxon_name_classifications?.find(c => 
-    c.taxon_name_classification_set?.includes('PartOfSpeech') || 
-    c.type?.includes('PartOfSpeech')
+    c.type?.toLowerCase().includes('partofspeech') || 
+    c.type?.toLowerCase().includes('form') ||
+    c.taxon_name_classification_set?.toLowerCase().includes('partofspeech')
   )
   return p ? (p.label || p.type.split('::').pop()) : null
 })
