@@ -75,6 +75,17 @@ jobs:
       - name: Build public view
         run: npm run build
 
+      - name: Debug build output
+        run: |
+          echo "Working dir: $(pwd)"
+          ls -la
+          if [ -d dist ]; then
+            echo "=== dist exists ==="
+            ls -la dist
+          else
+            echo "=== dist missing ==="
+          fi
+
       - name: Deploy to GitHub Pages
         uses: crazy-max/ghaction-github-pages@v2
         with:
