@@ -2,7 +2,7 @@
   <VCard v-if="url || isLoading || hasError">
     <VCardHeader><GBIFLogo class="h-6" /></VCardHeader>
     <VCardContent>
-      <VSpinner v-if="isLoading" legend="Loading GBIF data..." />
+      <VSpinner v-if="isLoading" />
       <div v-else-if="hasError" class="text-sm text-red-600 dark:text-red-400">
         Failed to load GBIF data
       </div>
