@@ -7,4 +7,10 @@
 !config/**
 !public
 !README.md
+!.github
+!.github/**
+!src
+!src/**
+!.nvmrc
+!package.json
 config/**/*.development.yml

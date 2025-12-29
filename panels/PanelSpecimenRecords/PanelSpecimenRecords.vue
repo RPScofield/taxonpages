@@ -78,7 +78,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { makeAPIRequest } from '@/utils'
-import GalleryThumbnailList from '@/components/Gallery/GalleryThumbnailList.vue'
+import GalleryThumbnailList from '@/components/Gallery/GalleryThumbnailList.client.vue'
 
 const props = defineProps({
   otuId: {
