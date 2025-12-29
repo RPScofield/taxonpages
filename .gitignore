@@ -15,4 +15,10 @@
 !package.json
 !package-lock.json
 !index.html
+!vite.config.js
+!server.js
+!.eslintrc.cjs
+!jsconfig.json
+!postcss.config.cjs
+!tailwind.config.cjs
 config/**/*.development.yml
