@@ -1,13 +1,16 @@
 <template>
-  <VCard v-if="url || isLoading || hasError">
+  <VCard>
     <VCardHeader><GBIFLogo class="h-6" /></VCardHeader>
     <VCardContent>
       <VSpinner v-if="isLoading" />
       <div v-else-if="hasError" class="text-sm text-red-600 dark:text-red-400">
         Failed to load GBIF data
       </div>
+      <div v-else-if="!url" class="text-sm text-gray-600 dark:text-gray-400">
+        No GBIF data available
+      </div>
       <a
-        v-else-if="url"
+        v-else
         class="text-sm"
         :href="url"
         target="_blank"
@@ -43,8 +46,17 @@ const url = computed(() => {
 
 let controller = null
 
+// Helper function to strip HTML tags from string
+function stripHtml(html) {
+  return html?.replace(/<[^>]*>/g, '') || null
+}
+
 async function loadUsageKey() {
-  if (!props.taxon?.expanded_name) {
+  // Try to get the scientific name from various possible fields
+  const scientificName = props.taxon?.cached || props.taxon?.name || stripHtml(props.taxon?.cached_html) || null
+  
+  if (!scientificName) {
+    console.warn('No scientific name found for taxon:', props.taxon)
     usageKey.value = null
     isLoading.value = false
     hasError.value = false
@@ -61,12 +73,16 @@ async function loadUsageKey() {
 
     const { data } = await axios.get('https://api.gbif.org/v1/species/match', {
       params: {
-        name: props.taxon.expanded_name
+        name: scientificName
       },
       signal: controller.signal
     })
 
     usageKey.value = data?.usageKey ?? null
+    
+    if (!usageKey.value) {
+      console.warn('No GBIF match found for:', scientificName)
+    }
   } catch (err) {
     // ignore aborts; handle other errors
     if (err?.name === 'CanceledError' || err?.message === 'canceled') {
@@ -83,7 +99,7 @@ async function loadUsageKey() {
 }
 
 onMounted(loadUsageKey)
-watch(() => props.taxon?.expanded_name, loadUsageKey)
+watch([() => props.taxon?.cached, () => props.taxon?.name, () => props.taxon?.cached_html], loadUsageKey)
 
 onBeforeUnmount(() => {
   if (controller) controller.abort()
