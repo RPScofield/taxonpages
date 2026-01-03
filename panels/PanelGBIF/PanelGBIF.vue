@@ -46,9 +46,13 @@ const url = computed(() => {
 
 let controller = null
 
+// Helper function to strip HTML tags from string
+function stripHtml(html) {
+  return html?.replace(/<[^>]*>/g, '') || null
+}
+
 async function loadUsageKey() {
   // Try to get the scientific name from various possible fields
-  const stripHtml = (html) => html?.replace(/<[^>]*>/g, '') || null
   const scientificName = props.taxon?.cached || props.taxon?.name || stripHtml(props.taxon?.cached_html) || null
   
   if (!scientificName) {
