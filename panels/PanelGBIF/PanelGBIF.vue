@@ -48,7 +48,8 @@ let controller = null
 
 async function loadUsageKey() {
   // Try to get the scientific name from various possible fields
-  const scientificName = props.taxon?.cached || props.taxon?.name || props.taxon?.cached_html?.replace(/<[^>]*>/g, '') || null
+  const stripHtml = (html) => html?.replace(/<[^>]*>/g, '') || null
+  const scientificName = props.taxon?.cached || props.taxon?.name || stripHtml(props.taxon?.cached_html) || null
   
   if (!scientificName) {
     console.warn('No scientific name found for taxon:', props.taxon)
@@ -94,7 +95,7 @@ async function loadUsageKey() {
 }
 
 onMounted(loadUsageKey)
-watch(() => [props.taxon?.cached, props.taxon?.name, props.taxon?.cached_html], loadUsageKey)
+watch([() => props.taxon?.cached, () => props.taxon?.name, () => props.taxon?.cached_html], loadUsageKey)
 
 onBeforeUnmount(() => {
   if (controller) controller.abort()
