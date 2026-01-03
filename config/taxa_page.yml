@@ -11,7 +11,7 @@ taxa_page:
 
         - - panel:map
           - panel:descendants
-          - panel:GBIF
+          - panel:gbif
           - panel:scrutiny
           - panel:statistics
   specimen_records:
