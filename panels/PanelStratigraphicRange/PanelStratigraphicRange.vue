@@ -187,7 +187,7 @@ const isLoading = ref(false)
 const dwcRecords = ref([])
 const occurrencesByStage = ref({})
 const timescaleData = ref(null)
-const viewMode = ref('timeline') // 'list' or 'timeline'
+const viewMode = ref('list') // Default to 'list' for better compatibility, 'timeline' requires D3.js
 const selectedStageInfo = ref(null)
 
 // Computed property for geo-timeline format

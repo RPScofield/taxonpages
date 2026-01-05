@@ -65,9 +65,13 @@ onMounted(() => {
       }
     })
 
-    // Set initial stage if provided
+    // Set initial stage if provided - wrap in try-catch for invalid stage names
     if (props.initialStage && geoTimeScale) {
-      geoTimeScale.stage = props.initialStage
+      try {
+        geoTimeScale.stage = props.initialStage
+      } catch (error) {
+        console.warn('Could not set initial stage:', props.initialStage, error)
+      }
     }
   } catch (error) {
     console.error('Error initializing GeoTimeScale:', error)

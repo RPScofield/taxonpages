@@ -133,7 +133,7 @@ export function getStageNames(stratigraphicData) {
 /**
  * Find the first stage with occurrences
  * @param {Object} stratigraphicData - Nested data
- * @param {Object} occurrencesByStage - Map of stage names to occurrence counts
+ * @param {Object} occurrencesByStage - Map of stage names to occurrence counts (keys should be lowercase)
  * @returns {string|null} - Name of first stage with occurrences, or null
  */
 export function findFirstOccurrenceStage(stratigraphicData, occurrencesByStage) {
@@ -146,7 +146,9 @@ export function findFirstOccurrenceStage(stratigraphicData, occurrencesByStage) 
       for (const series of period.series) {
         if (series.stages && Array.isArray(series.stages)) {
           for (const stage of series.stages) {
-            if (occurrencesByStage[stage.name.toLowerCase()] > 0) {
+            // Normalize both the stage name and check against normalized keys
+            const normalizedStageName = stage.name.toLowerCase()
+            if (occurrencesByStage[normalizedStageName] > 0) {
               return stage.name
             }
           }
