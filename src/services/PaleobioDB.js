@@ -73,6 +73,29 @@ class PaleobioDB {
       throw error
     }
   }
+
+  /**
+   * Get occurrences for a taxon by scientific name
+   * @param {string} scientificName - Scientific name of the taxon
+   * @param {Object} params - Additional query parameters
+   * @returns {Promise} List of occurrences with stratigraphic data
+   * @see https://paleobiodb.org/data1.2/occs_doc.html
+   */
+  async getOccurrences(scientificName, params = {}) {
+    try {
+      const response = await this.client.get('/occs/list.json', {
+        params: {
+          base_name: scientificName,
+          show: 'time,loc',
+          ...params
+        }
+      })
+      return response.data
+    } catch (error) {
+      console.error('Error fetching occurrences from PaleobioDB:', error)
+      throw error
+    }
+  }
 }
 
 // Export a singleton instance

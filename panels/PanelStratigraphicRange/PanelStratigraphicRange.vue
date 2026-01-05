@@ -98,11 +98,17 @@ import { ref, computed, onMounted } from 'vue'
 import { makeAPIRequest } from '@/utils'
 import { MESOZOIC_DATA, findStage as findStageFallback } from './mesozoicData.js'
 import { fetchTimescaleData, findStage as findStagePaleobioDB, DATA_SOURCE } from './paleobioDBData.js'
+import PaleobioDB from '@/services/PaleobioDB'
 
 const props = defineProps({
   otuId: {
     type: Number,
     required: true
+  },
+  taxon: {
+    type: Object,
+    required: false,
+    default: null
   }
 })
 
@@ -256,6 +262,78 @@ function parseStratigraphicData(records) {
   return stageCount
 }
 
+/**
+ * Parse PaleobioDB occurrence records to extract stratigraphic stages
+ * @param {Array} occurrences - PaleobioDB occurrence records
+ * @returns {Object} Stage counts
+ */
+function parsePaleobioDBOccurrences(occurrences) {
+  const stageCount = {}
+  const dataSource = timescaleData.value || MESOZOIC_DATA
+
+  if (!dataSource || !dataSource.periods || !occurrences || !Array.isArray(occurrences)) {
+    return stageCount
+  }
+
+  occurrences.forEach(occ => {
+    // PaleobioDB provides early_interval and late_interval fields
+    // which contain the stratigraphic interval names
+    const earlyInterval = occ.early_interval || occ.eni
+    const lateInterval = occ.late_interval || occ.lni
+    
+    // Try to match intervals to stages in our timescale
+    const intervals = [earlyInterval, lateInterval].filter(Boolean)
+    
+    intervals.forEach(interval => {
+      if (!interval) return
+      
+      const intervalStr = String(interval).toLowerCase().trim()
+      
+      // Try exact matching first
+      const findStageFunc = timescaleData.value ? findStagePaleobioDB : findStageFallback
+      const stage = findStageFunc(interval, dataSource)
+      
+      if (stage) {
+        const stageName = stage.name.toLowerCase()
+        stageCount[stageName] = (stageCount[stageName] || 0) + 1
+      } else {
+        // If no exact match, try word boundary matching to avoid false positives
+        dataSource.periods.forEach(period => {
+          period.series.forEach(series => {
+            series.stages.forEach(stage => {
+              const stageName = stage.name.toLowerCase()
+              // Use word boundary regex for more precise matching
+              const regex = new RegExp(`\\b${stageName}\\b`, 'i')
+              if (regex.test(intervalStr)) {
+                stageCount[stageName] = (stageCount[stageName] || 0) + 1
+              }
+            })
+          })
+        })
+      }
+    })
+  })
+
+  return stageCount
+}
+
+/**
+ * Helper to get scientific name from taxon object
+ */
+function getTaxonScientificName(taxon) {
+  if (!taxon) return null
+  
+  // Strip HTML tags if present
+  const stripHtml = (html) => {
+    if (!html) return ''
+    const tmp = document.createElement('div')
+    tmp.textContent = html
+    return tmp.textContent || ''
+  }
+  
+  return taxon.cached || taxon.name || stripHtml(taxon.cached_html) || null
+}
+
 onMounted(async () => {
   isLoading.value = true
   
@@ -272,22 +350,72 @@ onMounted(async () => {
     console.warn('Failed to load timescale data from PaleobioDB, using fallback:', error)
   }
   
-  // Then fetch DWC records
-  makeAPIRequest
-    .get(`/otus/${props.otuId}/inventory/dwc.json`)
-    .then((response) => {
-      dwcRecords.value = response.data || []
+  // Fetch both local DWC records and PaleobioDB occurrences in parallel
+  const promises = []
+  
+  // Fetch local DWC records
+  promises.push(
+    makeAPIRequest
+      .get(`/otus/${props.otuId}/inventory/dwc.json`)
+      .then((response) => {
+        dwcRecords.value = response.data || []
+        
+        // Filter for collection objects
+        const collectionObjects = dwcRecords.value.filter(
+          item => item.dwc_occurrence_object_type === 'CollectionObject'
+        )
+        
+        // Parse stratigraphic data from local records
+        return parseStratigraphicData(collectionObjects)
+      })
+      .catch((error) => {
+        console.error('Error fetching local DWC stratigraphic data:', error)
+        return {}
+      })
+  )
+  
+  // Fetch PaleobioDB occurrences if taxon info is available
+  if (props.taxon) {
+    const scientificName = getTaxonScientificName(props.taxon)
+    
+    if (scientificName) {
+      console.log('Fetching PaleobioDB occurrences for:', scientificName)
       
-      // Filter for collection objects
-      const collectionObjects = dwcRecords.value.filter(
-        item => item.dwc_occurrence_object_type === 'CollectionObject'
+      promises.push(
+        PaleobioDB.getOccurrences(scientificName)
+          .then((data) => {
+            if (data && data.records && data.records.length > 0) {
+              console.log(`Found ${data.records.length} PaleobioDB occurrences`)
+              return parsePaleobioDBOccurrences(data.records)
+            } else {
+              console.log('No PaleobioDB occurrences found')
+              return {}
+            }
+          })
+          .catch((error) => {
+            console.error('Error fetching PaleobioDB occurrences:', error)
+            return {}
+          })
       )
+    }
+  }
+  
+  // Wait for all data sources and merge the results
+  Promise.all(promises)
+    .then((results) => {
+      // Merge stage counts from all sources
+      const mergedStageCount = {}
       
-      // Parse stratigraphic data from records
-      occurrencesByStage.value = parseStratigraphicData(collectionObjects)
+      results.forEach(stageCount => {
+        Object.keys(stageCount).forEach(stage => {
+          mergedStageCount[stage] = (mergedStageCount[stage] || 0) + stageCount[stage]
+        })
+      })
+      
+      occurrencesByStage.value = mergedStageCount
     })
     .catch((error) => {
-      console.error('Error fetching stratigraphic data:', error)
+      console.error('Error processing stratigraphic data:', error)
     })
     .finally(() => {
       isLoading.value = false
