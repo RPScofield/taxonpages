@@ -1,15 +1,18 @@
 // Mesozoic Era stratigraphic data based on ICS Chart 2024-12
 // Time in Ma (million years ago)
+// Colors based on International Chronostratigraphic Chart 2024
 
 export const MESOZOIC_DATA = {
   name: 'Mesozoic',
   start: 251.902,
   end: 66.0,
+  color: '#67c5ca',
   periods: [
     {
       name: 'Triassic',
       start: 251.902,
       end: 201.4,
+      color: '#812b92',
       series: [
         {
           name: 'Upper Triassic',
@@ -45,6 +48,7 @@ export const MESOZOIC_DATA = {
       name: 'Jurassic',
       start: 201.4,
       end: 145.0,
+      color: '#34b2c9',
       series: [
         {
           name: 'Upper Jurassic',
@@ -84,6 +88,7 @@ export const MESOZOIC_DATA = {
       name: 'Cretaceous',
       start: 145.0,
       end: 66.0,
+      color: '#7fc64e',
       series: [
         {
           name: 'Upper Cretaceous',
