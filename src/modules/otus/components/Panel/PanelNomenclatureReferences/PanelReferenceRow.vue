@@ -53,13 +53,16 @@ const displayText = computed(() => {
 
 const doiUrl = computed(() => {
   if (!isObject.value || !props.reference.doi) return null
+  const doi = props.reference.doi
+  // Ensure doi is a string
+  if (typeof doi !== 'string') return null
   // If DOI is already a full URL, use it as-is
-  if (props.reference.doi.startsWith('http')) {
-    return props.reference.doi
+  if (doi.startsWith('http')) {
+    return doi
   }
   // Otherwise, prepend the DOI resolver URL
-  const doi = props.reference.doi.replace(/^doi:\s*/i, '')
-  return `https://doi.org/${doi}`
+  const cleanDoi = doi.replace(/^doi:\s*/i, '')
+  return `https://doi.org/${cleanDoi}`
 })
 
 const hasDocument = computed(() => {
