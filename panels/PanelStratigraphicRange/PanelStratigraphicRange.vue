@@ -1,3 +1,14 @@
+<!--
+  Stratigraphic Range Panel
+  
+  This panel displays stratigraphic/geological time data for fossil occurrences.
+  It integrates with the Paleobiology Database (paleobiodb.org) to fetch
+  the international geological timescale, with a fallback to hardcoded Mesozoic data.
+  
+  Data sources:
+  - Primary: Paleobiology Database API (https://paleobiodb.org/data1.2/timescales/diagram.json?id=1)
+  - Fallback: ICS Chart 2024-12 (hardcoded in mesozoicData.js)
+-->
 <template>
   <VCard>
     <VCardHeader>Stratigraphic Range</VCardHeader>
