@@ -278,8 +278,8 @@ function parsePaleobioDBOccurrences(occurrences) {
   occurrences.forEach(occ => {
     // PaleobioDB provides early_interval and late_interval fields
     // which contain the stratigraphic interval names
-    const earlyInterval = occ.eag || occ.early_interval
-    const lateInterval = occ.lag || occ.late_interval
+    const earlyInterval = occ.early_interval || occ.eni
+    const lateInterval = occ.late_interval || occ.lni
     
     // Try to match intervals to stages in our timescale
     const intervals = [earlyInterval, lateInterval].filter(Boolean)
