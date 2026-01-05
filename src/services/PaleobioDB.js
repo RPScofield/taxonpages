@@ -21,8 +21,15 @@ class PaleobioDB {
    */
   async getTimescaleDiagram(id = 1) {
     try {
-      const response = await this.client.get(`/timescales/diagram.json`, {
-        params: { id }
+      // The PaleobioDB API doesn't have a dedicated timescales/diagram endpoint
+      // Instead, we use the intervals/list endpoint to get all intervals for a timescale
+      const response = await this.client.get('/intervals/list.json', {
+        params: {
+          scale_id: id,
+          // Request all interval levels to build the full timescale hierarchy
+          // This includes periods, series/epochs, and stages/ages
+          all_records: true
+        }
       })
       return response.data
     } catch (error) {

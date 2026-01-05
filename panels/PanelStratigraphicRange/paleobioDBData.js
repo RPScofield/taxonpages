@@ -160,8 +160,10 @@ export function findStage(stageName, timescaleData) {
     return null
   }
   
-  const searchName = stageName.toLowerCase().trim()
+  // Ensure stageName is a string before calling toLowerCase
+  const searchName = String(stageName).toLowerCase().trim()
   
+  // First try: exact match
   for (const period of timescaleData.periods) {
     for (const series of period.series) {
       for (const stage of series.stages) {
@@ -170,6 +172,34 @@ export function findStage(stageName, timescaleData) {
             ...stage,
             series: series.name,
             period: period.name
+          }
+        }
+      }
+    }
+  }
+  
+  // Second try: normalize common variations
+  // Remove common suffixes and qualifiers like "Stage", "Age", parentheses, etc.
+  const normalizedSearch = searchName
+    .replace(/\s+(stage|age)$/i, '')
+    .replace(/\s*\([^)]*\)/g, '') // Remove parentheses and content
+    .trim()
+  
+  if (normalizedSearch !== searchName) {
+    for (const period of timescaleData.periods) {
+      for (const series of period.series) {
+        for (const stage of series.stages) {
+          const normalizedStageName = stage.name.toLowerCase()
+            .replace(/\s+(stage|age)$/i, '')
+            .replace(/\s*\([^)]*\)/g, '')
+            .trim()
+          
+          if (normalizedStageName === normalizedSearch) {
+            return {
+              ...stage,
+              series: series.name,
+              period: period.name
+            }
           }
         }
       }

@@ -382,11 +382,12 @@ function parsePaleobioDBOccurrences(occurrences) {
     intervals.forEach(interval => {
       if (!interval) return
       
+      // Normalize interval to string (it could be a string name or numeric ID)
       const intervalStr = String(interval).toLowerCase().trim()
       
-      // Try exact matching first
+      // Try exact matching first - pass the string representation
       const findStageFunc = timescaleData.value ? findStagePaleobioDB : findStageFallback
-      const stage = findStageFunc(interval, dataSource)
+      const stage = findStageFunc(String(interval), dataSource)
       
       if (stage) {
         const stageName = stage.name.toLowerCase()
