@@ -73,6 +73,9 @@
           <div class="text-gray-600 mt-2">
             Total occurrences: {{ totalOccurrences }}
           </div>
+          <div class="text-gray-500 text-[10px] mt-2">
+            Data source: {{ timescaleData ? 'Paleobiology Database' : 'ICS Chart 2024-12' }}
+          </div>
         </div>
       </div>
     </VCardContent>
@@ -82,7 +85,8 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { makeAPIRequest } from '@/utils'
-import { MESOZOIC_DATA, findStage } from './mesozoicData.js'
+import { MESOZOIC_DATA, findStage as findStageFallback } from './mesozoicData.js'
+import { fetchTimescaleData, findStage as findStagePaleobioDB, getAllStages } from './paleobioDBData.js'
 
 const props = defineProps({
   otuId: {
@@ -94,6 +98,8 @@ const props = defineProps({
 const isLoading = ref(false)
 const dwcRecords = ref([])
 const occurrencesByStage = ref({})
+const timescaleData = ref(null)
+const useFallbackData = ref(false)
 
 const hasData = computed(() => {
   return Object.keys(occurrencesByStage.value).length > 0
@@ -104,8 +110,15 @@ const totalOccurrences = computed(() => {
 })
 
 const visiblePeriods = computed(() => {
+  // Use PaleobioDB data if available, otherwise fall back to hardcoded data
+  const dataSource = timescaleData.value || MESOZOIC_DATA
+  
+  if (!dataSource || !dataSource.periods) {
+    return []
+  }
+
   // Show all periods, series, and stages with occurrence flags
-  return MESOZOIC_DATA.periods.map(period => {
+  return dataSource.periods.map(period => {
     const seriesWithFlags = period.series.map(series => {
       const stagesWithOccurrences = series.stages.filter(stage =>
         hasOccurrenceInStage(stage.name)
@@ -125,6 +138,15 @@ const visiblePeriods = computed(() => {
 })
 
 function getPeriodColor(periodName) {
+  // First try to get color from loaded timescale data
+  if (timescaleData.value && timescaleData.value.periods) {
+    const period = timescaleData.value.periods.find(p => p.name === periodName)
+    if (period && period.color) {
+      return period.color
+    }
+  }
+  
+  // Fall back to hardcoded colors
   const colors = {
     'Triassic': '#812b92',
     'Jurassic': '#34b2c9',
@@ -169,6 +191,11 @@ function extractGeologicalContext(record) {
 
 function parseStratigraphicData(records) {
   const stageCount = {}
+  const dataSource = timescaleData.value || MESOZOIC_DATA
+
+  if (!dataSource || !dataSource.periods) {
+    return stageCount
+  }
 
   records.forEach(record => {
     const geologicalInfo = extractGeologicalContext(record)
@@ -177,8 +204,8 @@ function parseStratigraphicData(records) {
     geologicalInfo.forEach(info => {
       const infoStr = String(info).toLowerCase()
       
-      // Check each stage in our Mesozoic data
-      MESOZOIC_DATA.periods.forEach(period => {
+      // Check each stage in our timescale data
+      dataSource.periods.forEach(period => {
         period.series.forEach(series => {
           series.stages.forEach(stage => {
             const stageName = stage.name.toLowerCase()
@@ -198,7 +225,8 @@ function parseStratigraphicData(records) {
     const latestStage = record.latestAgeOrHighestStage
 
     if (earliestStage) {
-      const stage = findStage(earliestStage)
+      const findStageFunc = timescaleData.value ? findStagePaleobioDB : findStageFallback
+      const stage = findStageFunc(earliestStage, dataSource)
       if (stage) {
         const stageName = stage.name.toLowerCase()
         stageCount[stageName] = (stageCount[stageName] || 0) + 1
@@ -206,7 +234,8 @@ function parseStratigraphicData(records) {
     }
 
     if (latestStage && latestStage !== earliestStage) {
-      const stage = findStage(latestStage)
+      const findStageFunc = timescaleData.value ? findStagePaleobioDB : findStageFallback
+      const stage = findStageFunc(latestStage, dataSource)
       if (stage) {
         const stageName = stage.name.toLowerCase()
         stageCount[stageName] = (stageCount[stageName] || 0) + 1
@@ -217,8 +246,25 @@ function parseStratigraphicData(records) {
   return stageCount
 }
 
-onMounted(() => {
+onMounted(async () => {
   isLoading.value = true
+  
+  // First, try to load timescale data from Paleobiology Database
+  try {
+    const paleobioData = await fetchTimescaleData()
+    if (paleobioData && paleobioData.periods && paleobioData.periods.length > 0) {
+      timescaleData.value = paleobioData
+      console.log('Successfully loaded timescale data from Paleobiology Database')
+    } else {
+      console.warn('PaleobioDB returned empty data, using fallback Mesozoic data')
+      useFallbackData.value = true
+    }
+  } catch (error) {
+    console.warn('Failed to load timescale data from PaleobioDB, using fallback:', error)
+    useFallbackData.value = true
+  }
+  
+  // Then fetch DWC records
   makeAPIRequest
     .get(`/otus/${props.otuId}/inventory/dwc.json`)
     .then((response) => {
