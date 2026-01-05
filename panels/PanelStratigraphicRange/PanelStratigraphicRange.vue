@@ -15,12 +15,6 @@
     <VCardContent :class="isLoading && 'min-h-[6rem]'">
       <VSpinner v-if="isLoading" />
       <div
-        v-else-if="!hasData"
-        class="text-sm text-gray-600 p-4"
-      >
-        No stratigraphic data available for this taxon.
-      </div>
-      <div
         v-else
         class="stratigraphic-chart"
       >
@@ -77,15 +71,18 @@
         <!-- Legend -->
         <div class="legend mt-4 p-3 bg-gray-50 rounded text-xs">
           <div class="font-semibold mb-2">Legend</div>
-          <div class="flex items-center gap-2 mb-1">
+          <div v-if="hasData" class="flex items-center gap-2 mb-1">
             <div class="w-3 h-3 rounded-full bg-blue-600" />
             <span>Species occurrence recorded</span>
           </div>
-          <div class="text-gray-600 mt-2">
+          <div v-if="hasData" class="text-gray-600 mt-2">
             Total occurrences: {{ totalOccurrences }}
           </div>
+          <div v-else class="text-gray-600 mt-2">
+            No occurrence data available for this taxon.
+          </div>
           <div class="text-gray-500 text-[10px] mt-2">
-            Data source: {{ timescaleData ? DATA_SOURCE.PALEOBIODB : DATA_SOURCE.FALLBACK }}
+            Timescale source: {{ timescaleData ? DATA_SOURCE.PALEOBIODB : DATA_SOURCE.FALLBACK }}
           </div>
         </div>
       </div>
