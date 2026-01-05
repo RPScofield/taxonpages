@@ -15,7 +15,7 @@
     <VCardContent :class="isLoading && 'min-h-[6rem]'">
       <VSpinner v-if="isLoading" />
       <div
-        v-else
+        v-if="!isLoading"
         class="stratigraphic-chart"
       >
         <!-- Period headers -->
