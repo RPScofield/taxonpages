@@ -104,25 +104,24 @@ const totalOccurrences = computed(() => {
 })
 
 const visiblePeriods = computed(() => {
-  // Only show periods that have occurrences
+  // Show all periods, series, and stages with occurrence flags
   return MESOZOIC_DATA.periods.map(period => {
-    const seriesWithOccurrences = period.series.map(series => {
+    const seriesWithFlags = period.series.map(series => {
       const stagesWithOccurrences = series.stages.filter(stage =>
         hasOccurrenceInStage(stage.name)
       )
       return {
         ...series,
-        stages: series.stages,
         hasOccurrences: stagesWithOccurrences.length > 0
       }
-    }).filter(series => series.stages.length > 0)
+    })
 
     return {
       ...period,
-      series: seriesWithOccurrences,
-      hasOccurrences: seriesWithOccurrences.some(s => s.hasOccurrences)
+      series: seriesWithFlags,
+      hasOccurrences: seriesWithFlags.some(s => s.hasOccurrences)
     }
-  }).filter(period => period.series.length > 0)
+  })
 })
 
 function getPeriodColor(periodName) {
@@ -184,8 +183,9 @@ function parseStratigraphicData(records) {
           series.stages.forEach(stage => {
             const stageName = stage.name.toLowerCase()
             
-            // Check if the stage name appears in the geological context
-            if (infoStr.includes(stageName)) {
+            // Use word boundary regex for more precise matching
+            const regex = new RegExp(`\\b${stageName}\\b`, 'i')
+            if (regex.test(infoStr)) {
               stageCount[stageName] = (stageCount[stageName] || 0) + 1
             }
           })
