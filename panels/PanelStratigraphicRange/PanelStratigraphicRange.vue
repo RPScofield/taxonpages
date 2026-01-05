@@ -97,7 +97,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { makeAPIRequest } from '@/utils'
 import { MESOZOIC_DATA, findStage as findStageFallback } from './mesozoicData.js'
-import { fetchTimescaleData, findStage as findStagePaleobioDB, getAllStages, DATA_SOURCE } from './paleobioDBData.js'
+import { fetchTimescaleData, findStage as findStagePaleobioDB, DATA_SOURCE } from './paleobioDBData.js'
 
 const props = defineProps({
   otuId: {
@@ -110,7 +110,6 @@ const isLoading = ref(false)
 const dwcRecords = ref([])
 const occurrencesByStage = ref({})
 const timescaleData = ref(null)
-const useFallbackData = ref(false)
 
 const hasData = computed(() => {
   return Object.keys(occurrencesByStage.value).length > 0
@@ -268,11 +267,9 @@ onMounted(async () => {
       console.log('Successfully loaded timescale data from Paleobiology Database')
     } else {
       console.warn('PaleobioDB returned empty data, using fallback Mesozoic data')
-      useFallbackData.value = true
     }
   } catch (error) {
     console.warn('Failed to load timescale data from PaleobioDB, using fallback:', error)
-    useFallbackData.value = true
   }
   
   // Then fetch DWC records
