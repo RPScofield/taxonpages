@@ -11,6 +11,7 @@ taxa_page:
 
         - - panel:map
           - panel:descendants
+          - panel:stratigraphic-range
           - panel:gbif
           - panel:scrutiny
           - panel:statistics
