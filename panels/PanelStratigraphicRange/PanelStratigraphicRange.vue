@@ -11,11 +11,35 @@
 -->
 <template>
   <VCard>
-    <VCardHeader>Stratigraphic Range</VCardHeader>
+    <VCardHeader>
+      <div class="flex items-center justify-between">
+        <span>Stratigraphic Range</span>
+        <div class="flex gap-2">
+          <button
+            class="view-toggle-btn"
+            :class="{ active: viewMode === 'list' }"
+            @click="viewMode = 'list'"
+            title="List view"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+          </button>
+          <button
+            class="view-toggle-btn"
+            :class="{ active: viewMode === 'timeline' }"
+            @click="viewMode = 'timeline'"
+            title="Interactive timeline view"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><polyline points="8 8 12 12 8 16"></polyline><polyline points="16 8 12 12 16 16"></polyline></svg>
+          </button>
+        </div>
+      </div>
+    </VCardHeader>
     <VCardContent :class="isLoading && 'min-h-[6rem]'">
       <VSpinner v-if="isLoading" />
+      
+      <!-- List View -->
       <div
-        v-if="!isLoading"
+        v-if="!isLoading && viewMode === 'list'"
         class="stratigraphic-chart"
       >
         <!-- Period headers -->
@@ -86,6 +110,51 @@
           </div>
         </div>
       </div>
+
+      <!-- Interactive Timeline View -->
+      <ClientOnly>
+        <div
+          v-if="!isLoading && viewMode === 'timeline'"
+          class="timeline-view"
+        >
+          <GeoTimeScaleViewer
+            v-if="geoTimelineIntervals.length > 0"
+            :intervals="geoTimelineIntervals"
+            :height="400"
+            :simplify="true"
+            :initial-stage="initialStage"
+            :occurrence-stages="occurrenceStages"
+            @stage-change="onStageChange"
+          />
+          
+          <!-- Timeline Legend -->
+          <div class="legend mt-4 p-3 bg-gray-50 rounded text-xs">
+            <div class="font-semibold mb-2">Interactive Timeline</div>
+            <div class="text-gray-600 mb-2">
+              Click on a geological stage to navigate, use mouse wheel to zoom.
+            </div>
+            <div v-if="hasData" class="text-gray-600 mt-2">
+              Total occurrences: {{ totalOccurrences }}
+            </div>
+            <div v-if="selectedStageInfo" class="mt-2 p-2 bg-white rounded border">
+              <div class="font-semibold">{{ selectedStageInfo.name }}</div>
+              <div class="text-gray-600 text-[10px]">
+                {{ selectedStageInfo.start }} - {{ selectedStageInfo.end }} Ma
+              </div>
+              <div v-if="hasOccurrenceInStage(selectedStageInfo.name)" class="mt-1 flex items-center gap-1">
+                <div class="w-2 h-2 rounded-full bg-blue-600" />
+                <span>{{ getOccurrenceCount(selectedStageInfo.name) }} occurrence(s)</span>
+              </div>
+            </div>
+            <div v-else class="text-gray-600 mt-2">
+              No occurrence data available for this taxon.
+            </div>
+            <div class="text-gray-500 text-[10px] mt-2">
+              Timescale source: {{ timescaleData ? DATA_SOURCE.PALEOBIODB : DATA_SOURCE.FALLBACK }}
+            </div>
+          </div>
+        </div>
+      </ClientOnly>
     </VCardContent>
   </VCard>
 </template>
@@ -96,6 +165,11 @@ import { makeAPIRequest } from '@/utils'
 import { MESOZOIC_DATA, findStage as findStageFallback } from './mesozoicData.js'
 import { fetchTimescaleData, findStage as findStagePaleobioDB, DATA_SOURCE } from './paleobioDBData.js'
 import PaleobioDB from '@/services/PaleobioDB'
+import GeoTimeScaleViewer from './GeoTimeScaleViewer.client.vue'
+import { 
+  transformToGeoTimelineFormat, 
+  findFirstOccurrenceStage 
+} from './dataTransformer.js'
 
 const props = defineProps({
   otuId: {
@@ -113,6 +187,30 @@ const isLoading = ref(false)
 const dwcRecords = ref([])
 const occurrencesByStage = ref({})
 const timescaleData = ref(null)
+const viewMode = ref('timeline') // 'list' or 'timeline'
+const selectedStageInfo = ref(null)
+
+// Computed property for geo-timeline format
+const geoTimelineIntervals = computed(() => {
+  const dataSource = timescaleData.value || MESOZOIC_DATA
+  return transformToGeoTimelineFormat(dataSource)
+})
+
+// Initial stage for timeline view
+const initialStage = computed(() => {
+  if (!hasData.value) {
+    return null
+  }
+  const dataSource = timescaleData.value || MESOZOIC_DATA
+  return findFirstOccurrenceStage(dataSource, occurrencesByStage.value)
+})
+
+// Array of stages with occurrences for highlighting
+const occurrenceStages = computed(() => {
+  return Object.keys(occurrencesByStage.value).filter(
+    stage => occurrencesByStage.value[stage] > 0
+  )
+})
 
 const hasData = computed(() => {
   return Object.keys(occurrencesByStage.value).length > 0
@@ -331,6 +429,20 @@ function getTaxonScientificName(taxon) {
   return taxon.cached || taxon.name || stripHtml(taxon.cached_html) || null
 }
 
+/**
+ * Handle stage change from GeoTimeScale component
+ */
+function onStageChange(node) {
+  if (node && node.data) {
+    selectedStageInfo.value = {
+      name: node.data.name,
+      start: node.data.start,
+      end: node.data.end
+    }
+    console.log('Selected stage:', node.data.name)
+  }
+}
+
 onMounted(async () => {
   isLoading.value = true
   
@@ -441,5 +553,31 @@ onMounted(async () => {
 
 .occurrence-marker {
   flex-shrink: 0;
+}
+
+.view-toggle-btn {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid #d1d5db;
+  background-color: white;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.view-toggle-btn:hover {
+  background-color: #f3f4f6;
+}
+
+.view-toggle-btn.active {
+  background-color: #3b82f6;
+  border-color: #3b82f6;
+  color: white;
+}
+
+.timeline-view {
+  min-height: 400px;
 }
 </style>
