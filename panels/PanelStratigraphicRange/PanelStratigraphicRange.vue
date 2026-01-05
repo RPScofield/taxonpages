@@ -1,0 +1,266 @@
+<template>
+  <VCard>
+    <VCardHeader>Stratigraphic Range</VCardHeader>
+    <VCardContent :class="isLoading && 'min-h-[6rem]'">
+      <VSpinner v-if="isLoading" />
+      <div
+        v-else-if="!hasData"
+        class="text-sm text-gray-600 p-4"
+      >
+        No stratigraphic data available for this taxon.
+      </div>
+      <div
+        v-else
+        class="stratigraphic-chart"
+      >
+        <!-- Period headers -->
+        <div class="flex flex-col gap-2 mb-4">
+          <div
+            v-for="period in visiblePeriods"
+            :key="period.name"
+            class="period-section"
+          >
+            <div
+              class="period-header text-sm font-bold p-2 rounded-t"
+              :style="{ backgroundColor: getPeriodColor(period.name) }"
+            >
+              {{ period.name }}
+            </div>
+            
+            <!-- Series within period -->
+            <div
+              v-for="series in period.series"
+              :key="series.name"
+              class="series-section"
+            >
+              <div class="series-header text-xs font-semibold p-2 bg-gray-100">
+                {{ series.name }}
+              </div>
+              
+              <!-- Stages within series -->
+              <div class="stages-container">
+                <div
+                  v-for="stage in series.stages"
+                  :key="stage.name"
+                  class="stage-row flex items-center p-1 hover:bg-gray-50 cursor-pointer"
+                  :class="{ 'bg-blue-50': hasOccurrenceInStage(stage.name) }"
+                  :title="`${stage.name}: ${stage.start} - ${stage.end} Ma`"
+                >
+                  <div class="stage-name text-xs flex-1 pl-4">
+                    {{ stage.name }}
+                  </div>
+                  <div class="stage-age text-xs text-gray-500 pr-2">
+                    {{ stage.start }}-{{ stage.end }} Ma
+                  </div>
+                  <div
+                    v-if="hasOccurrenceInStage(stage.name)"
+                    class="occurrence-marker w-3 h-3 rounded-full bg-blue-600 mr-2"
+                    :title="`${getOccurrenceCount(stage.name)} occurrence(s)`"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Legend -->
+        <div class="legend mt-4 p-3 bg-gray-50 rounded text-xs">
+          <div class="font-semibold mb-2">Legend</div>
+          <div class="flex items-center gap-2 mb-1">
+            <div class="w-3 h-3 rounded-full bg-blue-600" />
+            <span>Species occurrence recorded</span>
+          </div>
+          <div class="text-gray-600 mt-2">
+            Total occurrences: {{ totalOccurrences }}
+          </div>
+        </div>
+      </div>
+    </VCardContent>
+  </VCard>
+</template>
+
+<script setup>
+import { ref, computed, onMounted } from 'vue'
+import { makeAPIRequest } from '@/utils'
+import { MESOZOIC_DATA, findStage } from './mesozoicData.js'
+
+const props = defineProps({
+  otuId: {
+    type: Number,
+    required: true
+  }
+})
+
+const isLoading = ref(false)
+const dwcRecords = ref([])
+const occurrencesByStage = ref({})
+
+const hasData = computed(() => {
+  return Object.keys(occurrencesByStage.value).length > 0
+})
+
+const totalOccurrences = computed(() => {
+  return Object.values(occurrencesByStage.value).reduce((sum, count) => sum + count, 0)
+})
+
+const visiblePeriods = computed(() => {
+  // Show all periods, series, and stages with occurrence flags
+  return MESOZOIC_DATA.periods.map(period => {
+    const seriesWithFlags = period.series.map(series => {
+      const stagesWithOccurrences = series.stages.filter(stage =>
+        hasOccurrenceInStage(stage.name)
+      )
+      return {
+        ...series,
+        hasOccurrences: stagesWithOccurrences.length > 0
+      }
+    })
+
+    return {
+      ...period,
+      series: seriesWithFlags,
+      hasOccurrences: seriesWithFlags.some(s => s.hasOccurrences)
+    }
+  })
+})
+
+function getPeriodColor(periodName) {
+  const colors = {
+    'Triassic': '#812b92',
+    'Jurassic': '#34b2c9',
+    'Cretaceous': '#7fc64e'
+  }
+  return colors[periodName] || '#cccccc'
+}
+
+function hasOccurrenceInStage(stageName) {
+  return occurrencesByStage.value[stageName.toLowerCase()] > 0
+}
+
+function getOccurrenceCount(stageName) {
+  return occurrencesByStage.value[stageName.toLowerCase()] || 0
+}
+
+function extractGeologicalContext(record) {
+  // Try to extract geological/stratigraphic information from various DWC fields
+  const geologicalFields = [
+    record.formation,
+    record.member,
+    record.group,
+    record.bed,
+    record.geologicalContextID,
+    record.lithostratigraphicTerms,
+    record.chronostratigraphicTerms,
+    record.biostratigraphicTerms,
+    record.earliestEonOrLowestEonothem,
+    record.latestEonOrHighestEonothem,
+    record.earliestEraOrLowestErathem,
+    record.latestEraOrHighestErathem,
+    record.earliestPeriodOrLowestSystem,
+    record.latestPeriodOrHighestSystem,
+    record.earliestEpochOrLowestSeries,
+    record.latestEpochOrHighestSeries,
+    record.earliestAgeOrLowestStage,
+    record.latestAgeOrHighestStage
+  ].filter(Boolean)
+
+  return geologicalFields
+}
+
+function parseStratigraphicData(records) {
+  const stageCount = {}
+
+  records.forEach(record => {
+    const geologicalInfo = extractGeologicalContext(record)
+    
+    // Try to find stage names in the geological context
+    geologicalInfo.forEach(info => {
+      const infoStr = String(info).toLowerCase()
+      
+      // Check each stage in our Mesozoic data
+      MESOZOIC_DATA.periods.forEach(period => {
+        period.series.forEach(series => {
+          series.stages.forEach(stage => {
+            const stageName = stage.name.toLowerCase()
+            
+            // Use word boundary regex for more precise matching
+            const regex = new RegExp(`\\b${stageName}\\b`, 'i')
+            if (regex.test(infoStr)) {
+              stageCount[stageName] = (stageCount[stageName] || 0) + 1
+            }
+          })
+        })
+      })
+    })
+
+    // Also check the specific DWC stage fields
+    const earliestStage = record.earliestAgeOrLowestStage
+    const latestStage = record.latestAgeOrHighestStage
+
+    if (earliestStage) {
+      const stage = findStage(earliestStage)
+      if (stage) {
+        const stageName = stage.name.toLowerCase()
+        stageCount[stageName] = (stageCount[stageName] || 0) + 1
+      }
+    }
+
+    if (latestStage && latestStage !== earliestStage) {
+      const stage = findStage(latestStage)
+      if (stage) {
+        const stageName = stage.name.toLowerCase()
+        stageCount[stageName] = (stageCount[stageName] || 0) + 1
+      }
+    }
+  })
+
+  return stageCount
+}
+
+onMounted(() => {
+  isLoading.value = true
+  makeAPIRequest
+    .get(`/otus/${props.otuId}/inventory/dwc.json`)
+    .then((response) => {
+      dwcRecords.value = response.data || []
+      
+      // Filter for collection objects
+      const collectionObjects = dwcRecords.value.filter(
+        item => item.dwc_occurrence_object_type === 'CollectionObject'
+      )
+      
+      // Parse stratigraphic data from records
+      occurrencesByStage.value = parseStratigraphicData(collectionObjects)
+    })
+    .catch((error) => {
+      console.error('Error fetching stratigraphic data:', error)
+    })
+    .finally(() => {
+      isLoading.value = false
+    })
+})
+</script>
+
+<style scoped>
+.stratigraphic-chart {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.period-header {
+  color: white;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.series-header {
+  border-left: 3px solid #666;
+}
+
+.stage-row {
+  border-left: 2px solid #e5e7eb;
+  transition: background-color 0.2s;
+}
+
+.occurrence-marker {
+  flex-shrink: 0;
+}
+</style>
