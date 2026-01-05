@@ -297,13 +297,14 @@ function parsePaleobioDBOccurrences(occurrences) {
         const stageName = stage.name.toLowerCase()
         stageCount[stageName] = (stageCount[stageName] || 0) + 1
       } else {
-        // If no exact match, try partial matching
+        // If no exact match, try word boundary matching to avoid false positives
         dataSource.periods.forEach(period => {
           period.series.forEach(series => {
             series.stages.forEach(stage => {
               const stageName = stage.name.toLowerCase()
-              // Check if interval string contains the stage name or vice versa
-              if (intervalStr.includes(stageName) || stageName.includes(intervalStr)) {
+              // Use word boundary regex for more precise matching
+              const regex = new RegExp(`\\b${stageName}\\b`, 'i')
+              if (regex.test(intervalStr)) {
                 stageCount[stageName] = (stageCount[stageName] || 0) + 1
               }
             })
@@ -326,8 +327,8 @@ function getTaxonScientificName(taxon) {
   const stripHtml = (html) => {
     if (!html) return ''
     const tmp = document.createElement('div')
-    tmp.innerHTML = html
-    return tmp.textContent || tmp.innerText || ''
+    tmp.textContent = html
+    return tmp.textContent || ''
   }
   
   return taxon.cached || taxon.name || stripHtml(taxon.cached_html) || null
@@ -412,6 +413,9 @@ onMounted(async () => {
       })
       
       occurrencesByStage.value = mergedStageCount
+    })
+    .catch((error) => {
+      console.error('Error processing stratigraphic data:', error)
     })
     .finally(() => {
       isLoading.value = false
