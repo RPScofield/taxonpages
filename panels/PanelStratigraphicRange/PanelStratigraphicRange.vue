@@ -382,24 +382,26 @@ function parsePaleobioDBOccurrences(occurrences) {
     intervals.forEach(interval => {
       if (!interval) return
       
-      const intervalStr = String(interval).toLowerCase().trim()
+      // Convert interval to string (it could be a string name or numeric ID)
+      const intervalStr = String(interval)
       
-      // Try exact matching first
+      // Try exact matching first - pass the string representation
       const findStageFunc = timescaleData.value ? findStagePaleobioDB : findStageFallback
-      const stage = findStageFunc(interval, dataSource)
+      const stage = findStageFunc(intervalStr, dataSource)
       
       if (stage) {
         const stageName = stage.name.toLowerCase()
         stageCount[stageName] = (stageCount[stageName] || 0) + 1
       } else {
         // If no exact match, try word boundary matching to avoid false positives
+        const intervalStrLower = intervalStr.toLowerCase().trim()
         dataSource.periods.forEach(period => {
           period.series.forEach(series => {
             series.stages.forEach(stage => {
               const stageName = stage.name.toLowerCase()
               // Use word boundary regex for more precise matching
               const regex = new RegExp(`\\b${stageName}\\b`, 'i')
-              if (regex.test(intervalStr)) {
+              if (regex.test(intervalStrLower)) {
                 stageCount[stageName] = (stageCount[stageName] || 0) + 1
               }
             })
