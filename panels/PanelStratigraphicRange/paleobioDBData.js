@@ -5,6 +5,25 @@ import PaleobioDB from '@/services/PaleobioDB'
  * This data will replace/enhance the hardcoded mesozoicData
  */
 
+// Constants for Paleobiology Database interval types
+const INTERVAL_TYPE = {
+  PERIOD: 3,    // Period level (e.g., Triassic, Jurassic, Cretaceous)
+  SERIES: 4,    // Series/Epoch level (e.g., Upper Jurassic)
+  STAGE: 5      // Stage/Age level (e.g., Tithonian, Kimmeridgian)
+}
+
+// Geological time boundaries (in Ma - million years ago)
+const TIME_BOUNDARY = {
+  MESOZOIC_START: 252.0,  // Start of Mesozoic Era
+  MESOZOIC_END: 66.0      // End of Mesozoic Era (K-Pg boundary)
+}
+
+// Data source labels
+export const DATA_SOURCE = {
+  PALEOBIODB: 'Paleobiology Database',
+  FALLBACK: 'ICS Chart 2024-12'
+}
+
 let cachedTimescaleData = null
 
 /**
@@ -46,13 +65,26 @@ function transformPaleobioDBData(data) {
 
   // First pass: create a map of all intervals by ID
   data.records.forEach(interval => {
+    // Validate age values before parsing
+    const startAge = parseFloat(interval.eag)
+    const endAge = parseFloat(interval.lag)
+    
+    // Skip intervals with invalid age data
+    if (isNaN(startAge) || isNaN(endAge)) {
+      console.warn(`Skipping interval "${interval.nam}" with invalid age data:`, {
+        eag: interval.eag,
+        lag: interval.lag
+      })
+      return
+    }
+    
     intervalMap.set(interval.oid, {
       id: interval.oid,
       name: interval.nam,
       abbr: interval.abr,
       color: interval.col || '#cccccc',
-      start: parseFloat(interval.eag),
-      end: parseFloat(interval.lag),
+      start: startAge,
+      end: endAge,
       parentId: interval.pid,
       type: interval.lvl // Level/type of interval
     })
@@ -61,7 +93,9 @@ function transformPaleobioDBData(data) {
   // Second pass: organize into hierarchical structure
   // Identify periods (typically level 3 in standard timescale)
   intervalMap.forEach(interval => {
-    if (interval.type === 3 && interval.start >= 66.0 && interval.end <= 252.0) {
+    if (interval.type === INTERVAL_TYPE.PERIOD && 
+        interval.start >= TIME_BOUNDARY.MESOZOIC_END && 
+        interval.end <= TIME_BOUNDARY.MESOZOIC_START) {
       // This is likely a Mesozoic or Cenozoic period
       const period = {
         name: interval.name,
@@ -73,7 +107,7 @@ function transformPaleobioDBData(data) {
 
       // Find child series (epochs)
       intervalMap.forEach(child => {
-        if (child.parentId === interval.id && child.type === 4) {
+        if (child.parentId === interval.id && child.type === INTERVAL_TYPE.SERIES) {
           const series = {
             name: child.name,
             start: child.start,
@@ -83,7 +117,7 @@ function transformPaleobioDBData(data) {
 
           // Find child stages (ages)
           intervalMap.forEach(stage => {
-            if (stage.parentId === child.id && stage.type === 5) {
+            if (stage.parentId === child.id && stage.type === INTERVAL_TYPE.STAGE) {
               series.stages.push({
                 name: stage.name,
                 start: stage.start,
@@ -109,7 +143,7 @@ function transformPaleobioDBData(data) {
 
   return {
     name: 'Geological Timescale',
-    source: 'Paleobiology Database',
+    source: DATA_SOURCE.PALEOBIODB,
     periods
   }
 }

@@ -85,7 +85,7 @@
             Total occurrences: {{ totalOccurrences }}
           </div>
           <div class="text-gray-500 text-[10px] mt-2">
-            Data source: {{ timescaleData ? 'Paleobiology Database' : 'ICS Chart 2024-12' }}
+            Data source: {{ timescaleData ? DATA_SOURCE.PALEOBIODB : DATA_SOURCE.FALLBACK }}
           </div>
         </div>
       </div>
@@ -97,7 +97,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { makeAPIRequest } from '@/utils'
 import { MESOZOIC_DATA, findStage as findStageFallback } from './mesozoicData.js'
-import { fetchTimescaleData, findStage as findStagePaleobioDB, getAllStages } from './paleobioDBData.js'
+import { fetchTimescaleData, findStage as findStagePaleobioDB, getAllStages, DATA_SOURCE } from './paleobioDBData.js'
 
 const props = defineProps({
   otuId: {
