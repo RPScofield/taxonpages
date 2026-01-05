@@ -8,7 +8,7 @@
       />
       <div class="flex gap-2 items-center flex-shrink-0">
         <a
-          v-if="reference.doi"
+          v-if="doiUrl"
           :href="doiUrl"
           target="_blank"
           rel="noopener noreferrer"
@@ -18,7 +18,7 @@
           DOI
         </a>
         <a
-          v-if="reference.document"
+          v-if="hasDocument"
           :href="reference.document"
           target="_blank"
           rel="noopener noreferrer"
@@ -43,6 +43,8 @@ const props = defineProps({
   }
 })
 
+const isObject = computed(() => typeof props.reference === 'object' && props.reference !== null)
+
 const displayText = computed(() => {
   return typeof props.reference === 'string' 
     ? props.reference 
@@ -50,7 +52,7 @@ const displayText = computed(() => {
 })
 
 const doiUrl = computed(() => {
-  if (!props.reference.doi) return null
+  if (!isObject.value || !props.reference.doi) return null
   // If DOI is already a full URL, use it as-is
   if (props.reference.doi.startsWith('http')) {
     return props.reference.doi
@@ -58,5 +60,9 @@ const doiUrl = computed(() => {
   // Otherwise, prepend the DOI resolver URL
   const doi = props.reference.doi.replace(/^doi:\s*/i, '')
   return `https://doi.org/${doi}`
+})
+
+const hasDocument = computed(() => {
+  return isObject.value && props.reference.document
 })
 </script>
