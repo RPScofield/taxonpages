@@ -25,3 +25,6 @@
 config/**/*.development.yml
 node_modules/
 dist/
+!tools
+!tools/**
+tools/moult_visualization.png

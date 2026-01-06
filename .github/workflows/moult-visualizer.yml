@@ -1,0 +1,44 @@
+name: Moult Visualizer
+
+on:
+  workflow_dispatch:
+    inputs:
+      description:
+        description: 'Optional description for this run'
+        required: false
+        default: 'Generate moult visualization'
+
+jobs:
+  generate-visualization:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r tools/requirements.txt
+
+      - name: Run Moult Visualizer
+        run: |
+          cd tools
+          python moult_visualizer.py
+
+      - name: Upload visualization artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: moult-visualization
+          path: tools/moult_visualization.png
+          retention-days: 90
+
+      - name: Comment on workflow run
+        run: |
+          echo "✅ Moult visualization generated successfully!"
+          echo "📊 Download the artifact from the Actions tab to view the visualization."
