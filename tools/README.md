@@ -46,6 +46,7 @@ Each ring shows 52 weeks arranged in a circle, with months labeled around the pe
    - Open the file in a text editor
    - Find the "USER DATA INTERFACE" section
    - Modify the data arrays for each cycle (52 values, 0-100)
+   - Alternatively, refer to `example_data.py` for a template with all 52 weeks laid out
 
 3. Run the visualizer:
    ```bash
@@ -55,6 +56,10 @@ Each ring shows 52 weeks arranged in a circle, with months labeled around the pe
 4. The visualization will be saved as `moult_visualization.png` in the tools directory
 
 ## Customizing Your Data
+
+You can customize the moult data in two ways:
+
+### Method 1: Edit the Python Script Directly
 
 Edit the `moult_visualizer.py` file and modify the data arrays in the "USER DATA INTERFACE" section:
 
@@ -73,6 +78,15 @@ ab_data = [0]*45 + [50, 80, 100, 100, 80, 50, 20]
 ```
 
 Each array should contain exactly 52 numbers (0-100) representing the percentage of birds in moult for each week of the year.
+
+### Method 2: Use the Example Data Template
+
+The `example_data.py` file provides a template with all 52 weeks explicitly laid out for each cycle. This makes it easier to:
+- See the full year at a glance
+- Copy/paste data from spreadsheets
+- Organize your data before editing the main script
+
+After preparing your data in `example_data.py`, copy the values to the corresponding arrays in `moult_visualizer.py`.
 
 ### Tips for Data Entry
 
