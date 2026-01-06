@@ -10,7 +10,7 @@ path and saves them to a local directory.
 import os
 import requests
 from bs4 import BeautifulSoup
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse
 
 
 def run_functional_test():
@@ -42,15 +42,25 @@ def run_functional_test():
             src = img.get('src')
             if src and 'Paleontology' in src:
                 img_url = urljoin(gallery_url, src)
-                filename = src.split('/')[-1].split('?')[0]  # Clean filename
                 
-                # Handle filename collisions
+                # Extract filename more robustly
+                parsed_url = urlparse(img_url)
+                filename = os.path.basename(parsed_url.path)
+                if not filename:
+                    filename = f"image_{found_count + 1}.jpg"
+                
+                # Handle filename collisions (with maximum retries to prevent infinite loops)
                 if filename in downloaded_files:
                     base, ext = os.path.splitext(filename)
                     counter = 2
-                    while filename in downloaded_files:
+                    max_retries = 100
+                    while filename in downloaded_files and counter <= max_retries:
                         filename = f"{base}_{counter}{ext}"
                         counter += 1
+                    
+                    if counter > max_retries:
+                        print(f"  Skipping image: too many filename collisions")
+                        continue
                 
                 print(f"Found image: {filename}")
                 
