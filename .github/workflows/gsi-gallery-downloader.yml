@@ -1,0 +1,47 @@
+name: GSI Fossil Gallery Downloader
+
+on:
+  workflow_dispatch:
+    inputs:
+      description:
+        description: 'Optional description for this run'
+        required: false
+        default: 'Download GSI fossil images'
+
+jobs:
+  download-fossils:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r tools/requirements.txt
+
+      - name: Run GSI Fossil Gallery Downloader
+        run: |
+          cd tools
+          python gsi_gallery_downloader.py
+
+      - name: Upload downloaded fossils artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: gsi-fossil-images
+          path: tools/GSI_Fossils_Download/
+          retention-days: 30
+        if: always()
+
+      - name: Comment on workflow run
+        run: |
+          echo "✅ GSI fossil gallery download completed!"
+          echo "📊 Download the artifact from the Actions tab to view the fossil images."
