@@ -72,6 +72,29 @@ npm run dev
 
 TaxonPages will be running at http://localhost:5173/
 
+# Tools
+
+## Moult Visualizer
+
+TaxonPages includes a Python-based tool for visualizing annual moult cycles in birds. This tool creates circular heatmap visualizations showing the percentage of birds in moult across 52 weeks for different moult cycles.
+
+### Quick Start
+
+Run the visualizer using GitHub Actions:
+1. Go to the **Actions** tab
+2. Select **Moult Visualizer** workflow
+3. Click **Run workflow**
+4. Download the generated visualization from artifacts
+
+Or run locally:
+```bash
+cd tools
+pip install -r requirements.txt
+python moult_visualizer.py
+```
+
+For detailed documentation, see [tools/README.md](tools/README.md)
+
 # Customization
 
 ## Pages
