@@ -87,8 +87,8 @@ def run_moult_visualizer():
     # 2. Data Rings (Heatmap Style)
     base_radius = 3.0
     
-    # Colormap: White (0%) -> Dark Blue (100%)
-    # You can change 'Blues' to 'Reds', 'Greens', 'Viridis', etc.
+    # Colormap: White (0%) -> Yellow-Orange-Red (100%)
+    # You can change 'YlOrRd' to 'Blues', 'Greens', 'Reds', 'Viridis', etc.
     cmap = plt.cm.YlOrRd 
     norm = mcolors.Normalize(vmin=0, vmax=100)
     
