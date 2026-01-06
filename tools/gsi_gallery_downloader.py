@@ -37,19 +37,37 @@ def run_functional_test():
         images = soup.find_all('img')
         
         found_count = 0
+        downloaded_files = {}  # Track downloaded files to avoid collisions
         for img in images:
             src = img.get('src')
             if src and 'Paleontology' in src:
                 img_url = urljoin(gallery_url, src)
-                filename = src.split('/')[-1].split('?')[0] # Clean filename
+                filename = src.split('/')[-1].split('?')[0]  # Clean filename
+                
+                # Handle filename collisions
+                if filename in downloaded_files:
+                    base, ext = os.path.splitext(filename)
+                    counter = 2
+                    while filename in downloaded_files:
+                        filename = f"{base}_{counter}{ext}"
+                        counter += 1
                 
                 print(f"Found image: {filename}")
                 
-                # Download logic
-                img_data = requests.get(img_url, headers=headers).content
-                with open(os.path.join(save_folder, filename), 'wb') as f:
-                    f.write(img_data)
-                found_count += 1
+                # Download logic with error handling
+                try:
+                    img_response = requests.get(img_url, headers=headers, timeout=20)
+                    img_response.raise_for_status()
+                    img_data = img_response.content
+                    
+                    filepath = os.path.join(save_folder, filename)
+                    with open(filepath, 'wb') as f:
+                        f.write(img_data)
+                    
+                    downloaded_files[filename] = img_url
+                    found_count += 1
+                except Exception as img_error:
+                    print(f"  Failed to download {filename}: {img_error}")
 
         print(f"\nTest Complete. {found_count} images saved to '{save_folder}'.")
 
