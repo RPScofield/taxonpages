@@ -74,9 +74,11 @@ TaxonPages will be running at http://localhost:5173/
 
 # Tools
 
+TaxonPages includes Python-based tools for data collection and visualization:
+
 ## Moult Visualizer
 
-TaxonPages includes a Python-based tool for visualizing annual moult cycles in birds. This tool creates circular heatmap visualizations showing the percentage of birds in moult across 52 weeks for different moult cycles.
+A tool for visualizing annual moult cycles in birds. Creates circular heatmap visualizations showing the percentage of birds in moult across 52 weeks for different moult cycles.
 
 ### Quick Start
 
@@ -93,7 +95,19 @@ pip install -r requirements.txt
 python moult_visualizer.py
 ```
 
-For detailed documentation, see [tools/README.md](tools/README.md)
+## GSI Fossil Gallery Downloader
+
+A functional test tool that downloads fossil images from the Geological Survey of India (GSI) photo gallery.
+
+### Quick Start
+
+```bash
+cd tools
+pip install -r requirements.txt
+python gsi_gallery_downloader.py
+```
+
+For detailed documentation on all tools, see [tools/README.md](tools/README.md)
 
 # Customization
 
