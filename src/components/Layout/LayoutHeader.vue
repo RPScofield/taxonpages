@@ -1,6 +1,6 @@
 <template>
   <header
-    class="tp-header relative bg-primary-color px-4 py-4 shadow-sm shadow-base-muted h-auto align-middle flex items-center"
+    class="tp-header relative bg-primary-color px-4 py-4 shadow-sm shadow-base-muted h-auto flex items-center"
   >
     <div
       class="container flex flex-wrap justify-between items-center mx-auto font-medium text-secondary-content"
@@ -11,7 +11,7 @@
       >
         <img
           v-if="header_logo_url"
-          class="mr-3 h-32"
+          class="mr-3 h-20 md:h-32"
           :src="logoUrl"
           :alt="header_logo_text"
         />
