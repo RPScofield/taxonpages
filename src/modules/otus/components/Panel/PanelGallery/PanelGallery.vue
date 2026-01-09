@@ -1,5 +1,5 @@
 <template>
-  <VCard v-if="images.length || descendantImages.length">
+  <VCard v-if="images.length || descendantImages.length || isLoadingDescendants">
     <VCardContent>
       <!-- Current taxon images -->
       <GalleryImage 
@@ -9,7 +9,7 @@
       
       <!-- Descendant taxa thumbnail gallery -->
       <div 
-        v-if="descendantImages.length"
+        v-if="descendantImages.length || isLoadingDescendants"
         :class="{ 'mt-4': images.length }"
       >
         <h3 
@@ -18,7 +18,23 @@
         >
           Images from {{ descendantLabel }}
         </h3>
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+        
+        <!-- Loading state -->
+        <div 
+          v-if="isLoadingDescendants" 
+          class="flex justify-center py-8"
+        >
+          <VSpinner 
+            logo-class="w-8 h-8"
+            legend="Loading descendant images..."
+          />
+        </div>
+        
+        <!-- Thumbnail grid -->
+        <div 
+          v-else
+          class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3"
+        >
           <router-link
             v-for="item in descendantImages"
             :key="item.otuId"
@@ -77,6 +93,7 @@ const store = useImageStore()
 const images = computed(() => store.images || [])
 const descendantImages = ref([])
 const taxonomy = ref(null)
+const isLoadingDescendants = ref(false)
 
 const descendantLabel = computed(() => {
   if (!taxonomy.value || !taxonomy.value.descendants.length) {
@@ -93,6 +110,8 @@ const descendantLabel = computed(() => {
 })
 
 async function loadDescendantImages() {
+  isLoadingDescendants.value = true
+  
   try {
     // Fetch taxonomy with descendants
     const { data } = await useOtuPageRequest('panel:gallery-descendants', () =>
@@ -162,7 +181,7 @@ async function loadDescendantImages() {
           image: firstImage
         }
       } catch (e) {
-        // Return the descendant even without image so we know it exists
+        // Return null for taxa that fail to load
         return null
       }
     })
@@ -173,6 +192,8 @@ async function loadDescendantImages() {
     descendantImages.value = results.filter(item => item !== null && item.image !== null)
   } catch (e) {
     console.error('Error loading descendant images:', e)
+  } finally {
+    isLoadingDescendants.value = false
   }
 }
 
@@ -185,7 +206,7 @@ onMounted(() => {
   if (!store.images) {
     store.loadImages(props.otuId, { sortOrder: props.sort_order })
   }
-  if (descendantImages.value.length === 0) {
+  if (descendantImages.value.length === 0 && !isLoadingDescendants.value) {
     loadDescendantImages()
   }
 })
