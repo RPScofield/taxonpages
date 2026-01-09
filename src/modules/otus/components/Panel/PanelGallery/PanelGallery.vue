@@ -16,7 +16,7 @@
           v-if="images.length" 
           class="text-md font-semibold mb-3"
         >
-          Images from {{ descendantLabel }}
+          Images from descendant taxa
         </h3>
         
         <!-- Loading state -->
@@ -96,9 +96,9 @@ const descendantImages = ref([])
 const taxonomy = ref(null)
 const isLoadingDescendants = ref(false)
 
-const descendantLabel = computed(() => {
-  return 'descendant taxa'
-})
+// Constants
+const MAX_DESCENDANTS_DEPTH = 999 // Maximum depth for fetching descendants
+const API_V1_PREFIX = '/api/v1/'
 
 // Helper function to strip HTML tags for safe display
 function stripHtmlTags(html) {
@@ -115,7 +115,7 @@ async function loadDescendantImages() {
     const { data } = await useOtuPageRequest('panel:gallery-descendants', () =>
       TaxonWorks.getTaxonomy(props.otuId, {
         params: { 
-          max_descendants_depth: 999,  // Get all descendants recursively
+          max_descendants_depth: MAX_DESCENDANTS_DEPTH,
           validity: true
         }
       })
@@ -175,9 +175,10 @@ async function loadDescendantImages() {
           if (firstImage) {
             const { url, project_token } = __APP_ENV__
             
-            // Remove '/api/v1/' prefix (8 characters) from the path
+            // Remove API prefix from the path
             if (firstImage.original_png) {
-              firstImage.original = `${url}/${firstImage.original_png?.substring(8)}?project_token=${project_token}`
+              const imagePath = firstImage.original_png.replace(API_V1_PREFIX, '')
+              firstImage.original = `${url}/${imagePath}?project_token=${project_token}`
             }
           }
           
