@@ -142,9 +142,11 @@ export function findFirstOccurrenceStage(stratigraphicData, occurrencesByStage) 
   }
 
   // Normalize the occurrencesByStage keys to lowercase for more robust matching
+  // Accumulate values if multiple keys normalize to the same lowercase key
   const normalizedOccurrences = {}
   Object.keys(occurrencesByStage).forEach(key => {
-    normalizedOccurrences[key.toLowerCase()] = occurrencesByStage[key]
+    const normalizedKey = key.toLowerCase()
+    normalizedOccurrences[normalizedKey] = (normalizedOccurrences[normalizedKey] || 0) + occurrencesByStage[key]
   })
 
   for (const period of stratigraphicData.periods) {
@@ -154,7 +156,8 @@ export function findFirstOccurrenceStage(stratigraphicData, occurrencesByStage) 
           for (const stage of series.stages) {
             const normalizedStageName = stage.name.toLowerCase()
             const occurrenceCount = normalizedOccurrences[normalizedStageName]
-            if (occurrenceCount && occurrenceCount > 0) {
+            // Check for valid count > 0 (excludes undefined, null, 0, and negative values)
+            if (occurrenceCount != null && occurrenceCount > 0) {
               return stage.name
             }
           }
