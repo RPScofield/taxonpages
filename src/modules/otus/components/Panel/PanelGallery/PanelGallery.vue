@@ -98,7 +98,6 @@ const isLoadingDescendants = ref(false)
 
 // Constants
 const MAX_DESCENDANTS_DEPTH = 999 // Maximum depth for fetching descendants
-const API_V1_PREFIX = '/api/v1/'
 
 // Helper function to strip HTML tags for safe display
 function stripHtmlTags(html) {
@@ -175,10 +174,9 @@ async function loadDescendantImages() {
           if (firstImage) {
             const { url, project_token } = __APP_ENV__
             
-            // Remove API prefix from the path
+            // Remove '/api/v1/' prefix (8 characters) from the path
             if (firstImage.original_png) {
-              const imagePath = firstImage.original_png.replace(API_V1_PREFIX, '')
-              firstImage.original = `${url}/${imagePath}?project_token=${project_token}`
+              firstImage.original = `${url}/${firstImage.original_png?.substring(8)}?project_token=${project_token}`
             }
           }
           
@@ -202,7 +200,7 @@ async function loadDescendantImages() {
       }
     }
     
-    // Filter to only include taxa with images
+    // Filter to only include taxa that loaded successfully and have images
     descendantImages.value = allResults.filter(item => item !== null && item.image !== null)
   } catch (e) {
     console.error('Error loading descendant images:', e)
