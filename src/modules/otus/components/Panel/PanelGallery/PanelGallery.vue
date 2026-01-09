@@ -57,8 +57,9 @@
             </div>
             <span 
               class="text-xs mt-1 text-center line-clamp-2 group-hover:text-primary-500"
-              v-html="item.name"
-            />
+            >
+              {{ stripHtmlTags(item.name) }}
+            </span>
           </router-link>
         </div>
       </div>
@@ -96,18 +97,15 @@ const taxonomy = ref(null)
 const isLoadingDescendants = ref(false)
 
 const descendantLabel = computed(() => {
-  if (!taxonomy.value || !taxonomy.value.descendants.length) {
-    return 'descendants'
-  }
-  
-  // Get the rank of descendants to create an appropriate label
-  const firstDescendant = taxonomy.value.descendants[0]
-  if (firstDescendant) {
-    // Simple pluralization - can be improved
-    return 'descendant taxa'
-  }
-  return 'descendants'
+  return 'descendant taxa'
 })
+
+// Helper function to strip HTML tags for safe display
+function stripHtmlTags(html) {
+  if (!html) return ''
+  const doc = new DOMParser().parseFromString(html, 'text/html')
+  return doc.body.textContent || ''
+}
 
 async function loadDescendantImages() {
   isLoadingDescendants.value = true
@@ -154,42 +152,57 @@ async function loadDescendantImages() {
     // Limit to first 50 descendants to avoid overwhelming the API and UI
     const limitedDescendants = descendantsToShow.slice(0, 50)
     
-    // For each descendant, fetch their first image
-    const imagePromises = limitedDescendants.map(async (descendant) => {
-      try {
-        const response = await TaxonWorks.getOtuImages(descendant.otu_id, {
-          params: {
-            extend: ['depictions'],
-            otu_scope: ['all', 'coordinate_otus']
-          }
-        })
-        
-        const firstImageId = response.data.image_order?.[0]
-        const firstImage = firstImageId ? response.data.images[firstImageId] : null
-        
-        if (firstImage) {
-          const { url, project_token } = __APP_ENV__
-          
-          if (firstImage.original_png) {
-            firstImage.original = `${url}/${firstImage.original_png?.substring(8)}?project_token=${project_token}`
-          }
-        }
-        
-        return {
-          otuId: descendant.otu_id,
-          name: descendant.name,
-          image: firstImage
-        }
-      } catch (e) {
-        // Return null for taxa that fail to load
-        return null
-      }
-    })
+    // Batch size for concurrent requests to avoid overwhelming the server
+    const BATCH_SIZE = 10
+    const allResults = []
     
-    const results = await Promise.all(imagePromises)
+    // Process descendants in batches
+    for (let i = 0; i < limitedDescendants.length; i += BATCH_SIZE) {
+      const batch = limitedDescendants.slice(i, i + BATCH_SIZE)
+      
+      const batchPromises = batch.map(async (descendant) => {
+        try {
+          const response = await TaxonWorks.getOtuImages(descendant.otu_id, {
+            params: {
+              extend: ['depictions'],
+              otu_scope: ['all', 'coordinate_otus']
+            }
+          })
+          
+          const firstImageId = response.data.image_order?.[0]
+          const firstImage = firstImageId ? response.data.images[firstImageId] : null
+          
+          if (firstImage) {
+            const { url, project_token } = __APP_ENV__
+            
+            // Remove '/api/v1/' prefix (8 characters) from the path
+            if (firstImage.original_png) {
+              firstImage.original = `${url}/${firstImage.original_png?.substring(8)}?project_token=${project_token}`
+            }
+          }
+          
+          return {
+            otuId: descendant.otu_id,
+            name: descendant.name,
+            image: firstImage
+          }
+        } catch (e) {
+          // Return null for taxa that fail to load
+          return null
+        }
+      })
+      
+      const batchResults = await Promise.all(batchPromises)
+      allResults.push(...batchResults)
+      
+      // Small delay between batches to avoid overwhelming the server
+      if (i + BATCH_SIZE < limitedDescendants.length) {
+        await new Promise(resolve => setTimeout(resolve, 100))
+      }
+    }
     
     // Filter to only include taxa with images
-    descendantImages.value = results.filter(item => item !== null && item.image !== null)
+    descendantImages.value = allResults.filter(item => item !== null && item.image !== null)
   } catch (e) {
     console.error('Error loading descendant images:', e)
   } finally {
@@ -198,7 +211,7 @@ async function loadDescendantImages() {
 }
 
 onServerPrefetch(async () => {
-  await store.loadImages(props.otuId, { sortOrder: props.sortOrder })
+  await store.loadImages(props.otuId, { sortOrder: props.sort_order })
   await loadDescendantImages()
 })
 
