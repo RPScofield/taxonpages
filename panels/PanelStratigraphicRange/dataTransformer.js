@@ -144,9 +144,8 @@ export function findFirstOccurrenceStage(stratigraphicData, occurrencesByStage) 
   // Normalize the occurrencesByStage keys to lowercase for more robust matching
   // Accumulate values if multiple keys normalize to the same lowercase key
   const normalizedOccurrences = {}
-  Object.keys(occurrencesByStage).forEach(key => {
+  Object.entries(occurrencesByStage).forEach(([key, value]) => {
     const normalizedKey = key.toLowerCase()
-    const value = occurrencesByStage[key]
     // Only accumulate numeric values
     if (typeof value === 'number' && !isNaN(value)) {
       normalizedOccurrences[normalizedKey] = (normalizedOccurrences[normalizedKey] || 0) + value
