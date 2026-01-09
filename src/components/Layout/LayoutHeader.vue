@@ -1,6 +1,6 @@
 <template>
   <header
-    class="tp-header relative bg-header px-2 sm:px-4 py-2.5 shadow-sm shadow-base-muted pl-4 pr-4 h-9 align-middle flex items-center bg-primary-color"
+    class="tp-header relative bg-header px-2 sm:px-4 py-4 shadow-sm shadow-base-muted pl-4 pr-4 h-auto align-middle flex items-center bg-primary-color"
   >
     <div
       class="container flex flex-wrap justify-between items-center mx-auto font-medium text-secondary-content"
@@ -11,11 +11,11 @@
       >
         <img
           v-if="header_logo_url"
-          class="mr-3 h-10"
+          class="mr-3 h-30"
           :src="logoUrl"
           :alt="header_logo_text"
         />
-        <span>
+        <span class="text-5xl font-fossil font-bold tracking-wide">
           {{ header_logo_text || project_name }}
         </span>
       </RouterLink>

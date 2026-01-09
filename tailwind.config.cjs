@@ -24,7 +24,8 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        main: ['Roboto', 'sans-serif']
+        main: ['Roboto', 'sans-serif'],
+        fossil: ['Cinzel', 'Georgia', 'Times New Roman', 'serif']
       },
       colors: {
         base: {
