@@ -133,7 +133,7 @@ export function getStageNames(stratigraphicData) {
 /**
  * Find the first stage with occurrences
  * @param {Object} stratigraphicData - Nested data
- * @param {Object} occurrencesByStage - Map of stage names to occurrence counts (keys should be lowercase)
+ * @param {Object} occurrencesByStage - Map of stage names to occurrence counts
  * @returns {string|null} - Name of first stage with occurrences, or null
  */
 export function findFirstOccurrenceStage(stratigraphicData, occurrencesByStage) {
@@ -141,14 +141,26 @@ export function findFirstOccurrenceStage(stratigraphicData, occurrencesByStage) 
     return null
   }
 
+  // Normalize the occurrencesByStage keys to lowercase for more robust matching
+  // Accumulate values if multiple keys normalize to the same lowercase key
+  const normalizedOccurrences = {}
+  Object.entries(occurrencesByStage).forEach(([key, value]) => {
+    const normalizedKey = key.toLowerCase()
+    // Only accumulate numeric values
+    if (typeof value === 'number' && !isNaN(value)) {
+      normalizedOccurrences[normalizedKey] = (normalizedOccurrences[normalizedKey] || 0) + value
+    }
+  })
+
   for (const period of stratigraphicData.periods) {
     if (period.series && Array.isArray(period.series)) {
       for (const series of period.series) {
         if (series.stages && Array.isArray(series.stages)) {
           for (const stage of series.stages) {
-            // Normalize both the stage name and check against normalized keys
             const normalizedStageName = stage.name.toLowerCase()
-            if (occurrencesByStage[normalizedStageName] > 0) {
+            const occurrenceCount = normalizedOccurrences[normalizedStageName]
+            // Check for valid count > 0 (using != null to catch both null and undefined)
+            if (occurrenceCount != null && occurrenceCount > 0) {
               return stage.name
             }
           }
