@@ -146,7 +146,11 @@ export function findFirstOccurrenceStage(stratigraphicData, occurrencesByStage) 
   const normalizedOccurrences = {}
   Object.keys(occurrencesByStage).forEach(key => {
     const normalizedKey = key.toLowerCase()
-    normalizedOccurrences[normalizedKey] = (normalizedOccurrences[normalizedKey] || 0) + occurrencesByStage[key]
+    const value = occurrencesByStage[key]
+    // Only accumulate numeric values
+    if (typeof value === 'number' && !isNaN(value)) {
+      normalizedOccurrences[normalizedKey] = (normalizedOccurrences[normalizedKey] || 0) + value
+    }
   })
 
   for (const period of stratigraphicData.periods) {
@@ -156,7 +160,7 @@ export function findFirstOccurrenceStage(stratigraphicData, occurrencesByStage) 
           for (const stage of series.stages) {
             const normalizedStageName = stage.name.toLowerCase()
             const occurrenceCount = normalizedOccurrences[normalizedStageName]
-            // Check for valid count > 0 (excludes undefined, null, 0, and negative values)
+            // Check for valid count > 0 (using != null to catch both null and undefined)
             if (occurrenceCount != null && occurrenceCount > 0) {
               return stage.name
             }
