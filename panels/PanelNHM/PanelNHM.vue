@@ -102,7 +102,6 @@
 <script setup>
 import { ref, computed, onMounted, watch, onBeforeUnmount } from 'vue'
 import axios from 'axios'
-import { useImageStore } from '../../src/modules/otus/store/useImageStore'
 
 const props = defineProps({
   taxon: {
@@ -111,7 +110,7 @@ const props = defineProps({
   },
   otuId: {
     type: [String, Number],
-    required: true
+    required: false
   }
 })
 
@@ -127,7 +126,6 @@ const isImageViewerOpen = ref(false)
 const currentImageIndex = ref(0)
 
 let controller = null
-const imageStore = useImageStore()
 
 // Helper function to strip HTML tags from string
 function stripHtml(html) {
@@ -231,9 +229,6 @@ async function loadSpecimens() {
       
       // Extract images from specimen records
       extractImages()
-      
-      // Add images to the global gallery store
-      addImagesToGallery()
     } else {
       specimens.value = []
       totalSpecimens.value = 0
@@ -285,38 +280,6 @@ function extractImages() {
   }
   
   specimenImages.value = images.slice(0, 20) // Limit to 20 images
-}
-
-// Add NHM images to the global gallery store
-function addImagesToGallery() {
-  if (!imageStore || !specimenImages.value.length) {
-    return
-  }
-  
-  try {
-    // Format images to match the gallery store structure
-    const galleryImages = specimenImages.value.map((img, index) => ({
-      id: `nhm-${index}`,
-      original: img.url,
-      medium: img.url,
-      thumb: img.url,
-      label: img.alt,
-      attribution: 'Natural History Museum, London',
-      source: 'nhm'
-    }))
-    
-    // Add to existing images if the store has an images array
-    if (Array.isArray(imageStore.images)) {
-      // Append NHM images to the existing gallery
-      const existingImages = [...imageStore.images]
-      imageStore.images = [...existingImages, ...galleryImages]
-    } else if (imageStore.images === null) {
-      // Initialize with NHM images if no images exist
-      imageStore.images = galleryImages
-    }
-  } catch (error) {
-    console.error('Error adding images to gallery:', error)
-  }
 }
 
 onMounted(loadSpecimens)
