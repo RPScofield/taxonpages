@@ -34,20 +34,9 @@
         <!-- Image Gallery Section -->
         <div v-if="specimenImages.length > 0" class="mb-6">
           <h3 class="text-md font-semibold mb-3">Specimen Images</h3>
-          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-            <div
-              v-for="(image, index) in specimenImages"
-              :key="index"
-              class="aspect-square bg-base-background border border-base-muted rounded-md overflow-hidden hover:border-primary-500 transition-colors cursor-pointer"
-              @click="openImageViewer(index)"
-            >
-              <img
-                :src="image.url"
-                :alt="image.alt"
-                class="w-full h-full object-cover"
-              />
-            </div>
-          </div>
+          <GalleryImage 
+            :images="formattedImagesForGallery"
+          />
         </div>
 
         <!-- Location/Collection Data -->
@@ -82,19 +71,6 @@
           </a>
         </div>
       </div>
-
-      <!-- Image Viewer Modal -->
-      <ImageViewer
-        v-if="isImageViewerOpen"
-        :index="currentImageIndex"
-        :images="formattedImagesForViewer"
-        :next="currentImageIndex < specimenImages.length - 1"
-        :previous="currentImageIndex > 0"
-        @select-index="currentImageIndex = $event"
-        @next="nextImage()"
-        @previous="previousImage()"
-        @close="isImageViewerOpen = false"
-      />
     </VCardContent>
   </VCard>
 </template>
@@ -122,8 +98,6 @@ const hasError = ref(false)
 const specimens = ref([])
 const totalSpecimens = ref(0)
 const specimenImages = ref([])
-const isImageViewerOpen = ref(false)
-const currentImageIndex = ref(0)
 
 let controller = null
 
@@ -165,8 +139,9 @@ const nhmSearchUrl = computed(() => {
 })
 
 // Format images for the ImageViewer component
-const formattedImagesForViewer = computed(() => {
+const formattedImagesForGallery = computed(() => {
   return specimenImages.value.map(img => ({
+    id: `nhm-${img.catalogNumber || Math.random()}`,
     original: img.url,
     medium: img.url,
     thumb: img.url,
@@ -174,24 +149,6 @@ const formattedImagesForViewer = computed(() => {
     attribution: 'Natural History Museum, London'
   }))
 })
-
-// Image viewer navigation
-function openImageViewer(index) {
-  currentImageIndex.value = index
-  isImageViewerOpen.value = true
-}
-
-function nextImage() {
-  if (currentImageIndex.value < specimenImages.value.length - 1) {
-    currentImageIndex.value++
-  }
-}
-
-function previousImage() {
-  if (currentImageIndex.value > 0) {
-    currentImageIndex.value--
-  }
-}
 
 // Fetch specimen data from NHM API
 async function loadSpecimens() {
