@@ -78,6 +78,7 @@
 <script setup>
 import { ref, computed, onMounted, watch, onBeforeUnmount } from 'vue'
 import axios from 'axios'
+import { stripHTML } from '../../src/modules/otus/utils/stripHtml'
 
 const props = defineProps({
   taxon: {
@@ -101,14 +102,9 @@ const specimenImages = ref([])
 
 let controller = null
 
-// Helper function to strip HTML tags from string
-function stripHtml(html) {
-  return html?.replace(/<[^>]*>/g, '') || null
-}
-
 // Computed property for scientific name
 const scientificName = computed(() => {
-  return props.taxon?.cached || props.taxon?.name || stripHtml(props.taxon?.cached_html) || null
+  return props.taxon?.cached || props.taxon?.name || stripHTML(props.taxon?.cached_html) || null
 })
 
 // Computed property for unique locations
