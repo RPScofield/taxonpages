@@ -1,6 +1,6 @@
 :root {
-  --color-primary: 255, 158, 0;
-  --color-primary-content: 255, 255, 255;
+  --color-primary: 120, 109, 95;
+  --color-primary-content: 250, 213, 165;
 
   --color-secondary: 14, 165, 233;
   --color-secondary-content: 255, 255, 255;
@@ -27,8 +27,8 @@
 }
 
 .dark {
-  --color-primary: 23, 23, 23;
-  --color-primary-content: 255, 255, 255;
+  --color-primary: 120, 109, 95;
+  --color-primary-content: 250, 213, 165;
   
   --color-secondary: 14, 165, 233;
   --color-secondary-content: 255, 255, 255;
