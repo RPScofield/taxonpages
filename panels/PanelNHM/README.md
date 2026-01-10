@@ -12,10 +12,16 @@ This panel integrates with the Natural History Museum's Data Portal (https://dat
 
 ## API Integration
 
-The panel uses the NHM CKAN API:
+The panel integrates with the Natural History Museum's Data Portal API, which provides a RESTful interface returning data in JSON format.
+
+- **API Documentation**: https://data.nhm.ac.uk/api.html
 - **Base URL**: `https://data.nhm.ac.uk/api/3`
 - **Resource ID**: `05ff2255-c38a-40c9-b657-4ccb55ab2feb` (Collection specimens)
-- **Search**: Uses the `datastore_search` action to query by scientific name
+- **Endpoint**: `action/datastore_search` - CKAN datastore search action
+- **Method**: GET with query parameters
+- **Response Format**: JSON
+
+The panel uses the `datastore_search` action to query specimen records by scientific name.
 
 ## Data Displayed
 
