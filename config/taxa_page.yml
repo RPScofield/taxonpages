@@ -11,9 +11,6 @@ taxa_page:
 
         - - panel:map
           - panel:descendants
-          - panel:stratigraphic-range
-          - panel:gbif
-          - panel:nhm
           - panel:scrutiny
           - panel:statistics
   specimen_records:
@@ -25,3 +22,16 @@ taxa_page:
     rank_group: ['GenusGroup', 'SpeciesGroup']
     panels:
       - - - panel:inaturalist
+  stratigraphic_range:
+    label: 'Stratigraphic Range'
+    rank_group: ['SpeciesGroup', 'GenusGroup', 'FamilyGroup']
+    panels:
+      - - - panel:stratigraphic-range
+  gbif:
+    label: 'GBIF'
+    panels:
+      - - - panel:gbif
+  nhm:
+    label: 'Natural History Museum'
+    panels:
+      - - - panel:nhm
