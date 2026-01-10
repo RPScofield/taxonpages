@@ -106,6 +106,11 @@ function stripHtml(html) {
   return html?.replace(/<[^>]*>/g, '') || null
 }
 
+// Computed property for scientific name
+const scientificName = computed(() => {
+  return props.taxon?.cached || props.taxon?.name || stripHtml(props.taxon?.cached_html) || null
+})
+
 // Computed property for unique locations
 const uniqueLocations = computed(() => {
   const locations = []
@@ -134,8 +139,7 @@ const uniqueLocations = computed(() => {
 
 // Computed property for NHM search URL
 const nhmSearchUrl = computed(() => {
-  const scientificName = props.taxon?.cached || props.taxon?.name || stripHtml(props.taxon?.cached_html) || ''
-  return `https://data.nhm.ac.uk/dataset/collection-specimens?q=${encodeURIComponent(scientificName)}`
+  return `https://data.nhm.ac.uk/dataset/collection-specimens?q=${encodeURIComponent(scientificName.value || '')}`
 })
 
 // Format images for the ImageViewer component
@@ -152,9 +156,7 @@ const formattedImagesForGallery = computed(() => {
 
 // Fetch specimen data from NHM API
 async function loadSpecimens() {
-  const scientificName = props.taxon?.cached || props.taxon?.name || stripHtml(props.taxon?.cached_html) || null
-  
-  if (!scientificName) {
+  if (!scientificName.value) {
     console.warn('No scientific name found for taxon:', props.taxon)
     specimens.value = []
     isLoading.value = false
@@ -174,7 +176,7 @@ async function loadSpecimens() {
     const { data } = await axios.get(`${NHM_API_BASE}/action/datastore_search`, {
       params: {
         resource_id: COLLECTION_RESOURCE_ID,
-        q: scientificName,
+        q: scientificName.value,
         limit: 100 // Get up to 100 records
       },
       signal: controller.signal
@@ -227,7 +229,7 @@ function extractImages() {
         if (url.startsWith('http')) {
           images.push({
             url,
-            alt: `${specimen.scientificName || scientificName} - ${specimen.catalogNumber || 'Specimen'}`,
+            alt: `${specimen.scientificName || scientificName.value} - ${specimen.catalogNumber || 'Specimen'}`,
             catalogNumber: specimen.catalogNumber,
             specimen
           })
