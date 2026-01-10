@@ -13,6 +13,7 @@ taxa_page:
           - panel:descendants
           - panel:stratigraphic-range
           - panel:gbif
+          - panel:nhm
           - panel:scrutiny
           - panel:statistics
   specimen_records:
