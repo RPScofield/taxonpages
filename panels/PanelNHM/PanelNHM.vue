@@ -91,6 +91,9 @@ const props = defineProps({
   }
 })
 
+// Natural History Museum Data Portal API
+// Documentation: https://data.nhm.ac.uk/api.html
+// The API provides a RESTful interface, returning data in JSON format
 const NHM_API_BASE = 'https://data.nhm.ac.uk/api/3'
 const COLLECTION_RESOURCE_ID = '05ff2255-c38a-40c9-b657-4ccb55ab2feb'
 
