@@ -1,0 +1,1 @@
+import{_ as o,e as s,f as t,l as a}from"./index-CV6KFYyF.js";const c={},r={class:"normal-case text-xs"};function l(e,n){return t(),s("tbody",r,[a(e.$slots,"default")])}const d=o(c,[["render",l]]);export{d as default};

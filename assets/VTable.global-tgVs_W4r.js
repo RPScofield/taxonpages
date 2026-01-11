@@ -1,0 +1,1 @@
+import{_ as t,e as s,f as a,h as l,l as o}from"./index-CV6KFYyF.js";const r={},c={class:"tp-table relative sm:rounded-lg"},n={class:"w-full text-sm text-left text-gray-500 dark:text-gray-400"};function _(e,d){return a(),s("div",c,[l("table",n,[o(e.$slots,"default")])])}const i=t(r,[["render",_]]);export{i as default};

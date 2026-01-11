@@ -1,0 +1,1 @@
+import{_ as s,e as t,f as o,l as a}from"./index-CV6KFYyF.js";const l={},r={class:"px-4 py-3"};function c(e,n){return o(),t("th",r,[a(e.$slots,"default")])}const f=s(l,[["render",c]]);export{f as default};

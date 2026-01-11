@@ -1,0 +1,1 @@
+import{_ as r,e as o,f as s,l as t}from"./index-CV6KFYyF.js";const n={},a={class:"border-1 tp-card border-base-muted bg-base-foreground print:shadow-none print:border-0 rounded"};function d(e,c){return s(),o("div",a,[t(e.$slots,"default")])}const _=r(n,[["render",d]]);export{_ as default};

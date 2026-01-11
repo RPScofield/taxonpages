@@ -1,0 +1,1 @@
+import{_ as o,e as r,f as s,l as t}from"./index-CV6KFYyF.js";const a={},c={class:"bg-base-foreground border-b border-base-border"};function n(e,l){return s(),r("tr",c,[t(e.$slots,"default")])}const _=o(a,[["render",n]]);export{_ as default};

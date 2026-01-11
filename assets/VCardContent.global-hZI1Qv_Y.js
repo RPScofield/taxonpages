@@ -1,0 +1,1 @@
+import{_ as t,e as o,f as n,l as r}from"./index-CV6KFYyF.js";const s={},c={class:"p-4 pl-5 pr-5 tp-card-content"};function a(e,l){return n(),o("div",c,[r(e.$slots,"default")])}const d=t(s,[["render",a]]);export{d as default};

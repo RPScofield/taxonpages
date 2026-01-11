@@ -1,0 +1,1 @@
+import{_ as r,e as o,f as t,l as a}from"./index-CV6KFYyF.js";const s={},d={class:"tp-card-header p-4 pl-5 pr-5 border-b font-medium border-base-muted"};function c(e,n){return t(),o("div",d,[a(e.$slots,"default")])}const _=r(s,[["render",c]]);export{_ as default};

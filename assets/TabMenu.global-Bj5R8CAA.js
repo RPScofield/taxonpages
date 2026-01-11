@@ -1,0 +1,1 @@
+import{_ as t,e as s,f as a,l}from"./index-CV6KFYyF.js";const n={},o={class:"tp-tab-list inline-flex items-center gap-0.5 flex-wrap"};function r(e,c){return a(),s("ul",o,[l(e.$slots,"default")])}const f=t(n,[["render",r]]);export{f as default};

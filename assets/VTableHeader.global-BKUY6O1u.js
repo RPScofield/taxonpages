@@ -1,0 +1,1 @@
+import{_ as t,e as s,f as a,l as o}from"./index-CV6KFYyF.js";const c={},r={class:"text-xs text-base-content uppercase bg-base-background"};function n(e,l){return a(),s("thead",r,[o(e.$slots,"default")])}const d=t(c,[["render",n]]);export{d as default};

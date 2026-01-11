@@ -1,0 +1,1 @@
+import{r as t,o as s,l as a,e as l,f as n}from"./index-CV6KFYyF.js";const r={key:1},f={__name:"ClientOnly.global",setup(c){const e=t(!1);return s(()=>{e.value=!0}),(o,u)=>e.value?a(o.$slots,"default",{key:0}):(n(),l("div",r))}};export{f as default};
