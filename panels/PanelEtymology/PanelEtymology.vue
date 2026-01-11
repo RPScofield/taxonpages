@@ -26,7 +26,7 @@
       <template v-if="taxon.etymology">
         <hr class="border-gray-200 dark:border-gray-700" />
         <div class="prose prose-sm dark:prose-invert max-w-none">
-          <span class="font-semibold text-gray-600 dark:text-gray-400">Etymology:</span>
+          <span class="font-semibold text-gray-600 dark:text-gray-400">Etymology: </span>
           <span v-html="md.render(taxon.etymology)" class="inline-markdown" />
         </div>
       </template>
