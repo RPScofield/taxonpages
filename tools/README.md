@@ -1,3 +1,14 @@
+# TaxonPages Tools
+
+This directory contains Python-based tools for various data collection and visualization tasks.
+
+## Available Tools
+
+1. **Moult Visualizer** - Creates circular visualizations of annual moult cycles for birds
+2. **GSI Fossil Gallery Downloader** - Downloads fossil images from the Geological Survey of India
+
+---
+
 # Moult Visualizer Tool
 
 A Python-based tool to create circular (polar) visualizations of annual moult cycles for birds. This tool displays the percentage of birds in moult across 52 weeks for different moult cycles.
@@ -167,6 +178,99 @@ Make sure you're in the correct directory:
 cd /path/to/taxonpages/tools
 python moult_visualizer.py
 ```
+
+---
+
+# GSI Fossil Gallery Downloader
+
+A functional test tool that downloads fossil images from the Geological Survey of India (GSI) photo gallery. This tool searches for images containing 'Paleontology' in their source path and saves them to a local directory.
+
+## Overview
+
+The GSI Fossil Gallery Downloader:
+- Connects to the GSI public photo gallery
+- Searches for all images with 'Paleontology' in their URL
+- Downloads fossil images automatically
+- Saves images to a `GSI_Fossils_Download` directory
+
+## Usage
+
+### Prerequisites
+
+- Python 3.8 or higher
+- pip (Python package installer)
+- Internet connection
+
+### Installation
+
+1. Install the required Python dependencies:
+   ```bash
+   pip install -r tools/requirements.txt
+   ```
+
+### Running the Script
+
+1. Navigate to the tools directory:
+   ```bash
+   cd tools
+   ```
+
+2. Run the downloader:
+   ```bash
+   python gsi_gallery_downloader.py
+   ```
+
+3. The script will:
+   - Create a `GSI_Fossils_Download` directory if it doesn't exist
+   - Connect to the GSI photo gallery
+   - Search for paleontology images
+   - Download and save them locally
+
+### Output
+
+- **Directory**: `GSI_Fossils_Download/` (created automatically)
+- **Files**: Downloaded fossil images with their original filenames
+- **Console Output**: Progress information including:
+  - Connection status
+  - Number of images found
+  - Download progress
+  - Final count of saved images
+
+## Technical Details
+
+- **Source**: https://www.gsi.gov.in/webcenter/portal/OCBIS/pages_pageGeoInfo/pagePhotoGallery
+- **Filter**: Images containing 'Paleontology' in their source path
+- **Timeout**: 20 seconds for connection
+- **User-Agent**: Configured to mimic a standard browser
+
+## Troubleshooting
+
+### Connection Issues
+
+If you encounter connection errors:
+- Check your internet connection
+- Verify the GSI website is accessible
+- Try again later (the site may be temporarily unavailable)
+
+### Missing Dependencies
+
+If you get import errors, install the requirements:
+```bash
+pip install -r tools/requirements.txt
+```
+
+### Permission Errors
+
+Make sure you have write permissions in the tools directory:
+```bash
+chmod +x gsi_gallery_downloader.py
+```
+
+## Notes
+
+- The downloaded images are saved locally and are excluded from version control via `.gitignore`
+- This tool serves as a functional test for web scraping capabilities
+- The script is designed to be respectful of the source website with appropriate timeouts and headers
 
 ## Contributing
 
